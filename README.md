@@ -74,7 +74,7 @@ This project is licensed under the **[MIT License](LICENSE)**. See the `LICENSE`
 ## **Contact**
 - **Author**: Dayo Ajayi
 - **Email**: dayo.ajayi@gmail.com
-- **GitHub**: [your-username](https://github.com/dayoajayi)
+- **GitHub**: [dayoajayi](https://github.com/dayoajayi)
 
 ---
 
