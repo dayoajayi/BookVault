@@ -15,7 +15,6 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 @ExtendWith(MockitoExtension.class)
 // todo: consider renaming to BookServiceTest
 class BookVaultApplicationTests {
@@ -28,7 +27,7 @@ class BookVaultApplicationTests {
 
 	@BeforeEach
 	void setup() {
-		MockitoAnnotations.openMocks(this);
+
 	}
 
 	@Test
