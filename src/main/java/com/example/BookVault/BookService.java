@@ -27,9 +27,9 @@ public class BookService {
 
     public Book updateBook(Integer bookId, Book updatedBook) {
         return bookRepository.findById(bookId)
-                .map(existingBook -> {
-                    Book bookToUpdate = new Book(existingBook.getId(), updatedBook.getAuthor(), updatedBook.getTitle());
-                    return bookRepository.save(bookToUpdate);
+                .map(existingBookToUpdate -> {
+                    existingBookToUpdate = new Book(existingBookToUpdate.getId(), updatedBook.getAuthor(), updatedBook.getTitle());
+                    return bookRepository.save(existingBookToUpdate);
                 })
                 .orElseThrow(() -> new BookNotFoundException("Book with id " + bookId + " not found"));
     }
