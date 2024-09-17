@@ -3,6 +3,7 @@ POST http://localhost:8080/books
 Content-Type: application/json
 
 {
+  "id": 1,
   "title": "The Four Agreements",
   "author": "Don Miguel Ruiz"
 }

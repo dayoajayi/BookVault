@@ -9,12 +9,13 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
+@RequestMapping("/books")
 public class BookController {
 
     @Autowired
     private BookService bookService;
 
-    @PostMapping("/books")
+    @PostMapping
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
 
         Book savedBook = bookService.addBook(book);
