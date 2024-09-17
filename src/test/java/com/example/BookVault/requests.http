@@ -1,0 +1,29 @@
+### Create a new book
+POST http://localhost:8080/books
+Content-Type: application/json
+
+{
+  "title": "The Four Agreements",
+  "author": "Don Miguel Ruiz"
+}
+
+### Get all books
+GET http://localhost:8080/books
+Content-Type: application/json
+
+### Get a book by ID
+GET http://localhost:8080/books/1
+Content-Type: application/json
+
+### Update a book
+PUT http://localhost:8080/books/1
+Content-Type: application/json
+
+{
+  "title": "The Four Agreements - Updated",
+  "author": "Don Miguel Ruiz"
+}
+
+### Delete a book by ID
+DELETE http://localhost:8080/books/1
+Content-Type: application/json

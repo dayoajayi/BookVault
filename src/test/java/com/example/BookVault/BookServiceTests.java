@@ -4,7 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,10 +14,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-class BookServiceTest {
-
-
+@ExtendWith(SpringExtension.class)
+@SpringBootTest
+class BookServiceTests {
     @Mock
     private BookRepository bookRepository;
 
@@ -34,10 +34,11 @@ class BookServiceTest {
         Book savedBook = bookService.addBook(book);
 
         // then
-        assertNotNull(savedBook);
-        assertEquals("Excellent Advice for Living", savedBook.getTitle());
-        assertEquals("Kevin Kelly", savedBook.getAuthor());
-
+        assertAll(
+                () -> assertNotNull(savedBook),
+                () -> assertEquals("Excellent Advice for Living", savedBook.getTitle()),
+                () ->assertEquals("Kevin Kelly", savedBook.getAuthor())
+        );
     }
 
     @Test
@@ -46,7 +47,7 @@ class BookServiceTest {
         Book firstBook = new Book(123, "Tell My Horse", "Zora Neale Hurston");
         Book secondBook = new Book(456, "Excellent Advice for Living", "Kevin Kelly");
 
-        // setup the mock to add books
+        // set up the mock to add books
         when(bookRepository.save(firstBook)).thenReturn(firstBook);
         when(bookRepository.save(secondBook)).thenReturn(secondBook);
 
@@ -54,23 +55,23 @@ class BookServiceTest {
         bookService.addBook(firstBook);
         bookService.addBook(secondBook);
 
-        // setup the mock to retrieve all the books
+        // set up the mock to retrieve all the books
         when(bookRepository.findAll()).thenReturn(List.of(firstBook, secondBook));
-
 
         // when
         List<Book> retrievedBooks = bookService.getBooks();
 
         // then
-        assertNotNull(retrievedBooks, "The list of books should not be null");
-        assertFalse(retrievedBooks.isEmpty(), "The list of books should not be empty");
-        assertEquals(2, retrievedBooks.size());
-
-        assertEquals("Tell My Horse", firstBook.getTitle());
+        assertAll(
+                () -> assertNotNull(retrievedBooks, "The list of books should not be null"),
+                () -> assertFalse(retrievedBooks.isEmpty(), "The list of books should not be empty"),
+                () -> assertEquals(2, retrievedBooks.size()),
+                () -> assertEquals("Tell My Horse", firstBook.getTitle())
+        );
     }
 
     @Test
-    void canGetBooksById() {
+    void canGetBookById() {
         // given
         Book sampleBook = new Book(123, "Tell My Horse", "Zora Neale Hurston");
 
@@ -80,14 +81,16 @@ class BookServiceTest {
 
         // when
         bookService.addBook(sampleBook);
-        Optional<Book> retrievedBook = bookService.getBookById(sampleBook.getId());
+        Book retrievedBook = bookService
+                .getBookById(sampleBook.getId())
+                .orElseThrow(() -> new AssertionError("Book should be present"));
 
         // then
-        assertTrue(retrievedBook.isPresent(), "Book should be present");
-        assertEquals(sampleBook.getId(), (retrievedBook.get().getId()), "Book ID should match");
-        assertEquals(sampleBook.getTitle(), (retrievedBook.get().getTitle()), "Book Title should match");
-        assertEquals(sampleBook.getAuthor(), (retrievedBook.get().getAuthor()), "Book Author should match");
-
+        assertAll(
+                () -> assertEquals(sampleBook.getId(), retrievedBook.getId(), "Book ID should match"),
+                () -> assertEquals(sampleBook.getTitle(), (retrievedBook.getTitle()), "Book Title should match"),
+                () -> assertEquals(sampleBook.getAuthor(), (retrievedBook.getAuthor()), "Book Author should match")
+        );
     }
 
     @Test
@@ -104,9 +107,13 @@ class BookServiceTest {
         Book result = bookService.updateBook(bookId, updatedBook);
 
         // then
-        assertNotNull(result);
-        assertEquals("The Four Agreements", result.getTitle());
-        assertEquals("Don Miguel Ruiz", result.getAuthor());
+        assertAll(
+                () -> assertNotNull(result),
+                () -> assertEquals("The Four Agreements", result.getTitle()),
+                () -> assertEquals("Don Miguel Ruiz", result.getAuthor())
+        );
+
+        // ensure the repository method was indeed called
         verify(bookRepository).save(any(Book.class));
     }
 

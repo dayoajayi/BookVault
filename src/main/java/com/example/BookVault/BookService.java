@@ -1,17 +1,21 @@
 package com.example.BookVault;
 
+import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
-
 @Service
 @AllArgsConstructor
+@Transactional
+@Slf4j
 public class BookService {
 
-    private final BookRepository bookRepository;
-
+    @Autowired
+    private BookRepository bookRepository;
 
     public Book addBook(Book book) {
         return bookRepository.save(book);
