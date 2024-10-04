@@ -1,21 +1,16 @@
-package com.example.BookVault;
+package com.example.BookVault.domain;
 
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import java.util.List;
 
-@Service
-@AllArgsConstructor
-@Transactional
 @Slf4j
 public class BookService {
 
-    @Autowired
-    private BookRepository bookRepository;
+    private final BookRepository bookRepository;
+
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
 
     public Book addBook(Book book) {
         return bookRepository.save(book);
@@ -32,7 +27,7 @@ public class BookService {
     public Book updateBook(Integer bookId, Book updatedBook) {
         return bookRepository.findById(bookId)
                 .map(existingBookToUpdate -> {
-                    existingBookToUpdate = new Book(existingBookToUpdate.getId(), updatedBook.getAuthor(), updatedBook.getTitle());
+                    existingBookToUpdate = new Book(existingBookToUpdate.getId(), updatedBook.getTitle(), updatedBook.getAuthor());
                     return bookRepository.save(existingBookToUpdate);
                 })
                 .orElseThrow(() -> new BookNotFoundException("Book with id " + bookId + " not found"));

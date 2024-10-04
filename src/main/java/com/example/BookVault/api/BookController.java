@@ -1,6 +1,7 @@
-package com.example.BookVault;
+package com.example.BookVault.api;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.BookVault.domain.Book;
+import com.example.BookVault.domain.BookService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,9 +12,11 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/books")
 public class BookController {
+    private final BookService bookService;
 
-    @Autowired
-    private BookService bookService;
+    public BookController(BookService bookService) {
+        this.bookService = bookService;
+    }
 
     @PostMapping
     public ResponseEntity<Book> addBook(@RequestBody Book book) {
@@ -22,12 +25,7 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedBook);
     }
 
-    @GetMapping("/books")
-    public List<Book> getBooks() {
-        return bookService.getBooks();
-    }
-
-    @GetMapping("/books/{id}")
+    @GetMapping("/{id}")
     public ResponseEntity<Book> getBookById(@PathVariable int id) {
 
         Optional<Book> book = bookService.getBookById(id);
@@ -35,13 +33,18 @@ public class BookController {
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
-    @PutMapping("/books/{id}")
+    @GetMapping()
+    public List<Book> getBooks() {
+        return bookService.getBooks();
+    }
+
+    @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable int id, @RequestBody Book book) {
         Book updatedBook = bookService.updateBook(id, book);
         return ResponseEntity.ok(updatedBook);
     }
 
-    @DeleteMapping("/books/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Book> deleteBook(@PathVariable int id) {
         bookService.deleteBookById(id);
         return ResponseEntity.noContent().build();

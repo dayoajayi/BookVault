@@ -1,4 +1,4 @@
-package com.example.BookVault;
+package com.example.BookVault.persistence;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class Book {
+public class BookJPAEntity {
     @Id
     public Integer id;
     public String title;
