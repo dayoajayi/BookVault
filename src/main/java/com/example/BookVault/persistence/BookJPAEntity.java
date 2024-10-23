@@ -7,15 +7,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
 @Setter
 public class BookJPAEntity {
+
     @Id
-    public Integer id;
+    public UUID id;
+
     public String title;
     public String author;
+    public String isbn;
 
 }

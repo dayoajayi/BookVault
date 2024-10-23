@@ -1,7 +1,7 @@
 package com.example.BookVault;
 
-
 import com.example.BookVault.domain.Book;
+import com.example.BookVault.domain.BookId;
 import com.example.BookVault.domain.BookRepository;
 
 import java.util.ArrayList;
@@ -19,27 +19,28 @@ public class FakeBookRepository implements BookRepository {
         return book;
     }
 
-    @Override
-    public Optional<Book> findById(Integer integer) {
-        return books.stream()
-                .filter(book -> book.getId().equals(integer))
-                .findFirst();
-    }
-
-    @Override
-    public boolean existsById(int bookId) {
-        return false;
-    }
-
-    @Override
-    public void deleteById(int bookId) {
-
-    }
-
 
     @Override
     public List<Book> findAll() {
         return books;
+    }
+
+    @Override
+    public Optional<Book> findById(BookId bookId) {
+        return books.stream()
+                .filter(book -> book.getId().equals(bookId))
+                .findFirst();
+    }
+
+    @Override
+    public boolean existsById(BookId bookId) {
+        return books.stream()
+                .anyMatch(book -> book.getId().equals(bookId));
+    }
+
+    @Override
+    public void deleteById(BookId bookId) {
+        books.removeIf(book -> book.getId().equals(bookId));
     }
 
 }

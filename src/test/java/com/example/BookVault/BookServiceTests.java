@@ -1,11 +1,7 @@
 package com.example.BookVault;
 
-import com.example.BookVault.domain.Book;
-import com.example.BookVault.domain.BookNotFoundException;
-import com.example.BookVault.domain.BookRepository;
-import com.example.BookVault.domain.BookService;
+import com.example.BookVault.domain.*;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,7 +29,8 @@ class BookServiceTests {
     @Test
     void canAddBook() {
         // given
-        Book book = new Book(123, "Excellent Advice for Living", "Kevin Kelly");
+        BookId bookId = new BookId();
+        Book book = new Book(bookId, "Excellent Advice for Living", "Kevin Kelly", new Isbn("978-0-59-365453-8"));
 
         // when
         Book savedBook = bookService.addBook(book);
@@ -48,7 +45,8 @@ class BookServiceTests {
 
     @Test
     void canAddAndGetBooks() {
-        Book bookToSave = new Book(123, "Domain Driven Design", " Eric Evans");
+        BookId bookId = new BookId();
+        Book bookToSave = new Book(bookId, "Domain Driven Design", "Eric Evans", new Isbn("978-0-13-218126-6"));
 
         Book savedBook = bookService.addBook(bookToSave);
 
@@ -56,20 +54,24 @@ class BookServiceTests {
                 .orElseThrow(() -> new AssertionError("Book should be present"));
 
         assertNotNull(retrievedBook);
-        assertEquals(123, retrievedBook.getId());
+        assertEquals(bookId, retrievedBook.getId());
         assertEquals("Domain Driven Design", retrievedBook.getTitle());
     }
 
     @Test
     void canAddAndGetMultipleBooks() {
-        Book bookToSave1 = new Book(123, "Domain Driven Design", " Eric Evans");
+        BookId bookId1 = new BookId();
+        Isbn isbn1 = new Isbn("978-0-59-365453-8");
+        Book bookToSave1 = new Book(bookId1, "Domain Driven Design", " Eric Evans", isbn1);
         Book savedBook1 = bookService.addBook(bookToSave1);
 
         List<Book> savedBooks = bookService.getBooks();
 
         assertEquals(List.of(savedBook1), savedBooks);
 
-        Book bookToSave2 = new Book(456, "TDD by Example", "Kent Beck");
+        BookId bookId2 = new BookId();
+        Isbn isbn2 = new Isbn("978-0-59-365453-8");
+        Book bookToSave2 = new Book(bookId2, "TDD by Example", "Kent Beck", isbn2);
         Book savedBook2 = bookService.addBook(bookToSave2);
 
         savedBooks = bookService.getBooks();
@@ -80,8 +82,13 @@ class BookServiceTests {
     @Test
     void canGetBooks() {
         // given
-        Book firstBook = new Book(123, "Tell My Horse", "Zora Neale Hurston");
-        Book secondBook = new Book(456, "Excellent Advice for Living", "Kevin Kelly");
+
+        BookId bookId1 = new BookId();
+        Isbn isbn1 = new Isbn("978-0-59-365453-8");
+        BookId bookId2 = new BookId();
+        Isbn isbn2 = new Isbn("978-0-59-365453-8");
+        Book firstBook = new Book(bookId1, "Tell My Horse", "Zora Neale Hurston", isbn1);
+        Book secondBook = new Book(bookId2, "Excellent Advice for Living", "Kevin Kelly", isbn2);
 
         // add books
         bookService.addBook(firstBook);
@@ -102,8 +109,9 @@ class BookServiceTests {
     @Test
     void canGetBookById() {
         // given
-        int bookId = 123;
-        Book sampleBook = new Book(bookId, "Tell My Horse", "Zora Neale Hurston");
+        BookId bookId = new BookId();
+        Isbn isbn = new Isbn("978-0-59-365453-8");
+        Book sampleBook = new Book(bookId, "Tell My Horse", "Zora Neale Hurston", isbn);
 
         // when
         bookService.addBook(sampleBook);
@@ -122,9 +130,10 @@ class BookServiceTests {
     @Test
     void canUpdateBook() {
         // given
-        int bookId = 1;
-        Book existingBook = new Book(bookId, "The Three Agreements", "Don Miguel Ruiz");
-        Book updatedBook = new Book(bookId, "The Four Agreements", "Don Miguel Ruiz");
+        BookId bookId = new BookId();
+        Isbn isbn = new Isbn("978-0-59-365453-8");
+        Book existingBook = new Book(bookId, "The Three Agreements", "Don Miguel Ruiz", isbn);
+        Book updatedBook = new Book(bookId, "The Four Agreements", "Don Miguel Ruiz", isbn);
         bookService.addBook(existingBook);
 
         // when
@@ -142,8 +151,9 @@ class BookServiceTests {
     void updateBookFailsWhenBookNotFound() {
 
         // given
-        int bookId = 1;
-        Book updatedBook = new Book(bookId, "The Three Agreements", "Don Miguel Ruiz");
+        BookId bookId = new BookId();
+        Isbn isbn = new Isbn("978-0-59-365453-8");
+        Book updatedBook = new Book(bookId, "The Three Agreements", "Don Miguel Ruiz", isbn);
 
         // when / then
         assertThrows(BookNotFoundException.class, () -> bookService.updateBook(bookId, updatedBook));
@@ -151,26 +161,24 @@ class BookServiceTests {
     }
 
     @Test
-    @Disabled
     void canDeleteBookById() {
         // given
-        int bookId = 123;
-        Book book = new Book(bookId, "Domain Driven Design", "Eric Evans");
+        BookId bookId = new BookId();
+        Isbn isbn = new Isbn("978-0-59-365453-8");
+        Book book = new Book(bookId, "Domain Driven Design", "Eric Evans", isbn);
         bookService.addBook(book);
 
         // when
         bookService.deleteBookById(bookId);
 
         // then
-        // todo: this test failing. What's the correct assertion to make here??
         assertTrue(bookService.getBookById(bookId).isEmpty());
-        assertThrows(BookNotFoundException.class, () -> bookService.getBookById(bookId));
     }
 
     @Test
     void shouldThrowExceptionWhenBookNotFound() {
         // given
-        int bookId = 123;
+        BookId bookId = new BookId();
 
         // when & then
         assertThrows(BookNotFoundException.class, () -> bookService.deleteBookById(bookId));

@@ -1,7 +1,9 @@
 package com.example.BookVault.persistence;
 
 import com.example.BookVault.domain.Book;
+import com.example.BookVault.domain.BookId;
 import com.example.BookVault.domain.BookRepository;
+import com.example.BookVault.domain.Isbn;
 import jakarta.transaction.Transactional;
 
 import java.util.List;
@@ -29,27 +31,27 @@ public class DatabaseBookRepository implements BookRepository {
     }
 
     @Override
-    public Optional<Book> findById(Integer bookId) {
+    public Optional<Book> findById(BookId bookId) {
 
         return bookJPARepository.findById(bookId)
                 .map(this::toBook);
     }
 
     @Override
-    public boolean existsById(int bookId) {
+    public boolean existsById(BookId bookId) {
         return bookJPARepository.existsById(bookId);
     }
 
     @Override
-    public void deleteById(int bookId) {
+    public void deleteById(BookId bookId) {
         bookJPARepository.deleteById(bookId);
     }
 
     private BookJPAEntity toEntity(Book book) {
-        return new BookJPAEntity(book.getId(), book.getTitle(), book.getAuthor());
+        return new BookJPAEntity(book.getId().id(), book.getTitle(), book.getAuthor(), book.getIsbn().value());
     }
 
     private Book toBook(BookJPAEntity entity) {
-        return new Book(entity.getId(), entity.getTitle(), entity.getAuthor());
+        return new Book(new BookId(entity.getId()), entity.getTitle(), entity.getAuthor(), new Isbn(entity.getIsbn()));
     }
 }

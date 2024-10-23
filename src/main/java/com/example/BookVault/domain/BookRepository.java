@@ -7,8 +7,8 @@ public interface BookRepository {
 
     Book save(Book book);
     List<Book> findAll();
-    Optional<Book> findById(Integer bookId);
-    boolean existsById(int bookId);
-    void deleteById(int bookId);
+    Optional<Book> findById(BookId bookId);
+    boolean existsById(BookId bookId);
+    void deleteById(BookId bookId);
 
 }

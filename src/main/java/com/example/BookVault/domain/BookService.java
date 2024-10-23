@@ -1,8 +1,11 @@
 package com.example.BookVault.domain;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
+@Component
 @Slf4j
 public class BookService {
 
@@ -20,20 +23,22 @@ public class BookService {
         return bookRepository.findAll();
     }
 
-    public java.util.Optional<Book> getBookById(int bookId) {
+    public java.util.Optional<Book> getBookById(BookId bookId) {
         return bookRepository.findById(bookId);
     }
 
-    public Book updateBook(Integer bookId, Book updatedBook) {
+    public Book updateBook(BookId bookId, Book updatedBook) {
+        Isbn isbn = new Isbn("978-3-16-148410-0");
         return bookRepository.findById(bookId)
                 .map(existingBookToUpdate -> {
-                    existingBookToUpdate = new Book(existingBookToUpdate.getId(), updatedBook.getTitle(), updatedBook.getAuthor());
+                    existingBookToUpdate = new Book(existingBookToUpdate.getId(), updatedBook.getTitle(), updatedBook.getAuthor(), isbn);
                     return bookRepository.save(existingBookToUpdate);
                 })
                 .orElseThrow(() -> new BookNotFoundException("Book with id " + bookId + " not found"));
     }
 
-    public void deleteBookById(int bookId) {
+    public void deleteBookById(BookId bookId) {
+
         if (!bookRepository.existsById(bookId)) {
             throw new BookNotFoundException("Book with id" + bookId + " not found");
         }
