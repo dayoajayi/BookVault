@@ -1,9 +1,11 @@
 package com.example.BookVault.domain;
 
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @Slf4j
@@ -15,7 +17,12 @@ public class BookService {
         this.bookRepository = bookRepository;
     }
 
+    @SneakyThrows
     public Book addBook(Book book) {
+
+        if (bookRepository.existsByIsbn(book.getIsbn())) {
+            throw new BookAlreadyExistsException("Book with id " + book.getId() + " already exists");
+        }
         return bookRepository.save(book);
     }
 
@@ -23,7 +30,7 @@ public class BookService {
         return bookRepository.findAll();
     }
 
-    public java.util.Optional<Book> getBookById(BookId bookId) {
+    public Optional<Book> getBookById(BookId bookId) {
         return bookRepository.findById(bookId);
     }
 
@@ -44,5 +51,10 @@ public class BookService {
         }
 
         bookRepository.deleteById(bookId);
+    }
+
+    public Optional<Book> getBookByIsbn(Isbn isbn) {
+        return null;
+        // todo: implement this with corresponding story
     }
 }

@@ -1,17 +1,12 @@
 package com.example.BookVault.api;
 
-import com.example.BookVault.domain.Book;
-import com.example.BookVault.domain.BookId;
-import com.example.BookVault.domain.BookService;
-import com.example.BookVault.domain.Isbn;
+import com.example.BookVault.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/books")
@@ -28,41 +23,45 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.CREATED).body(book);
     }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<BookDTO> getBookById(@PathVariable UUID id) {
+    @GetMapping("/{isbn}")
+    public ResponseEntity<BookDTO> getBookByIsbn(@PathVariable String isbn) {
 
-        Optional<BookDTO> bookDto = bookService.getBookById(new BookId(id)).map(book -> {
-            BookDTO bookDTO = new BookDTO();
-            bookDTO.setTitle(book.getTitle());
-            bookDTO.setAuthor(book.getAuthor());
-            bookDTO.setIsbn(book.getIsbn().value());
-            return bookDTO;
-        });
-        return bookDto.map(ResponseEntity::ok)
+        return bookService
+                .getBookByIsbn(new Isbn(isbn))
+                .map(this::toDto)
+                .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @GetMapping()
     public List<BookDTO> getBooks() {
-        return bookService.getBooks().stream().map(book -> {
-            BookDTO bookDTO = new BookDTO();
-            bookDTO.setTitle(book.getTitle());
-            bookDTO.setAuthor(book.getAuthor());
-            bookDTO.setIsbn(book.getIsbn().value());
-            return bookDTO;
-        }).toList();
+
+        return bookService.getBooks().stream().map(this::toDto).toList();
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/{id}") // TODO change to update by ISBN
     public ResponseEntity<BookDTO> updateBook(@PathVariable String id, @RequestBody BookDTO book) {
         bookService.updateBook(new BookId(UUID.fromString(id)), new Book(book.getTitle(), book.getAuthor(), new Isbn(book.getIsbn())));
 
         return ResponseEntity.ok(book);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/{id}") // TODO change to delete by ISBN
     public ResponseEntity<BookDTO> deleteBook(@PathVariable UUID id) {
         bookService.deleteBookById(new BookId(id));
         return ResponseEntity.noContent().build();
+    }
+
+    @ExceptionHandler(BookAlreadyExistsException.class)
+    public ResponseEntity<String> handleBookAlreadyExistsException(BookAlreadyExistsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    private BookDTO toDto(Book book) {
+        BookDTO bookDTO = new BookDTO();
+        bookDTO.setTitle(book.getTitle());
+        bookDTO.setAuthor(book.getAuthor());
+        bookDTO.setIsbn(book.getIsbn().value());
+        return bookDTO;
     }
 }

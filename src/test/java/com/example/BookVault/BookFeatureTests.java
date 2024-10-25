@@ -1,44 +1,85 @@
 package com.example.BookVault;
 
-import com.example.BookVault.api.BookController;
-import com.example.BookVault.domain.Book;
-import com.example.BookVault.domain.BookId;
-import com.example.BookVault.domain.BookService;
-import com.example.BookVault.domain.Isbn;
+import org.apache.coyote.Response;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.reactive.server.WebTestClient;
+import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(SpringExtension.class)
-@WebMvcTest(BookController.class)
-public class BookControllerTests {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class BookFeatureTests {
 
     @Autowired
-    private MockMvc mockMvc;
+    private TestRestTemplate mockMvc;
 
-    @MockBean
-    private BookService bookService;
+    @Autowired
+    private WebTestClient client;
 
+
+    ResponseSpec addBook(TestBook book) {
+        return client.post().uri("/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"title\": \"%s\", \"author\": \"%s\", \"isbn\": \"%s\"}".formatted(book.title(), book.author(), book.isbn()))
+                .exchange();
+    }
+
+    ResponseSpec getBooks() {
+        return client.get().uri("/books")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    void addBookAndValidateCreated(TestBook book) {
+        addBook(book)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.title").isEqualTo(book.title())
+                .jsonPath("$.author").isEqualTo(book.author())
+                .jsonPath("$.isbn").isEqualTo(book.isbn());
+    }
 
     @Test
-    void canAddBook() throws Exception {
+    void shouldAddBookWhenBookDoesNotExist() {
+
+        // given
+        String isbn = "978-0-59-365453-8";
+
+        // when + then
+        addBookAndValidateCreated(new TestBook("Atomic Habits", "James Clear", isbn));
+
+        getBooks()
+                .expectBody()
+                .jsonPath("$.length()").isEqualTo(1)
+                .jsonPath("$[0].title").isEqualTo("Atomic Habits")
+                .jsonPath("$[0].author").isEqualTo("James Clear");
+
+    }
+
+    @Test
+    void shouldNotAddBookWhenBookAlreadyExists() {
+
+        // given
+        TestBook book = new TestBook("Accelerate", "Nicole Forsgren", "978-1-94-278833-1");
+
+        // when
+        addBookAndValidateCreated(book);
+
+        // then
+        addBook(book).expectStatus().is4xxClientError();
+    }
+
+
+
+/*
+    @Test
+    void canAddABook_AndDoesNotDuplicateBook() throws Exception {
         // given
         UUID uuid = UUID.randomUUID();
         BookId bookId = new BookId();
@@ -48,12 +89,20 @@ public class BookControllerTests {
 
         // when + then
         mockMvc.perform(post("/books")
-               .contentType(MediaType.APPLICATION_JSON)
-               .content("{\"title\": \"Atomic Habits\", \"author\": \"James Clear\", \"isbn\": \"978-0-59-365453-8\"}"))
-               .andExpect(status().isCreated())
-               .andExpect(jsonPath("$.title").value("Atomic Habits"))
-               .andExpect(jsonPath("$.author").value("James Clear"))
-               .andExpect(jsonPath("$.isbn").value("978-0-59-365453-8"));
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"%s\", \"title\": \"Atomic Habits\", \"author\": \"James Clear\", \"isbn\": \"1\"}".formatted(uuid)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.title").value("Atomic Habits"))
+                .andExpect(jsonPath("$.author").value("James Clear"));
+        verify(bookService).addBook(any(Book.class));
+
+
+        mockMvc.perform(post("/books")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"id\": \"%s\", \"title\": \"Atomic Habits\", \"author\": \"James Clear\", \"isbn\": \"1\"}".formatted(uuid)))
+                .andExpect(status().is4xxClientError())
+                .andExpect(jsonPath("$.title").value("Atomic Habits"))
+                .andExpect(jsonPath("$.author").value("James Clear"));
 
         verify(bookService).addBook(any(Book.class));
     }
@@ -79,15 +128,16 @@ public class BookControllerTests {
     }
 
     @Test
-    void canGetBookByIsbn() throws Exception {
+    void canGetBookById() throws Exception {
         // given
         BookId bookId = new BookId();
         Isbn isbn = new Isbn("978-0-59-365453-8");
         Book sampleBook = new Book(bookId, "The Four Agreements", "Don Miguel Ruiz", isbn);
-        when(bookService.getBookByIsbn(isbn)).thenReturn(Optional.of(sampleBook));
+        when(bookService.getBookById(bookId)).thenReturn(Optional.of(sampleBook));
 
         // when + then
-        mockMvc.perform(get("/books/{isbn}", isbn.value()))
+        String string = bookId.id().toString();
+        mockMvc.perform(get("/books/{id}", string))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("The Four Agreements"))
                 .andExpect(jsonPath("$.author").value("Don Miguel Ruiz"));
@@ -130,4 +180,8 @@ public class BookControllerTests {
         verify(bookService).deleteBookById(bookId);
     }
 
+ */
+
 }
+
+

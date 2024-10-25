@@ -20,6 +20,7 @@ dependencies {
     testImplementation("org.mockito:mockito-junit-jupiter:5.11.0")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-web")
+    testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.kafka:spring-kafka")
     runtimeOnly("com.h2database:h2")
     compileOnly("org.projectlombok:lombok")

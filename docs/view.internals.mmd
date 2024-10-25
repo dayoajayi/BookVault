@@ -1,0 +1,73 @@
+classDiagram
+    class BookDTO {
+        +String ISBN
+        +String title
+        +String author
+    }
+
+    class BookId {
+        +UUID id
+    }
+
+    class ISBN {
+        +String value
+    }
+
+    class Book {
+        +BookId id
+        +ISBN ISBN
+        +String title
+        +String author
+    }
+
+    class BookJPAEntity {
+        +String id: primary key
+        +String ISBN
+        +String title
+        +String author
+    }
+
+    class BookController {
+        +addBook(book: BookDTO)
+        +updateBook(isbn: String, book: BookDTO)
+        +getBookByISBN(isbn: String): BookDTO
+        +getBooks(): List<BookDTO>
+        +deleteBook(isbn: String)
+    }
+
+    class BookService {
+        +addBook(book: Book)
+        +updateBook(isbn: String, book: Book)
+        +getBookByISBN(isbn: String): Book
+        +getBooks(): List<Book>
+        +deleteBook(isbn: String)
+
+    }
+
+    class BookRepository {
+        +save(book: Book)
+        +findAll(): List<Book>
+        +findByIsbn(isbn: String): Optional<Book>
+        +findByID(id: UUID): Optional<Book>
+    }
+
+    class BookJpaRepository {
+        +save(book: BookJPAEntity)
+        +findAll(): List<BookJPAEntity>
+        +findByIsbn(isbn: String): Optional<BookJPAEntity>
+        +findByID(id: UUID): Optional<BookJPAEntity>
+    }
+
+
+    Book-->BookId
+    Book-->ISBN
+
+%%BookController..BookDTO
+    BookController-->BookService: Transforms between BookDTO <--> Book
+
+    BookService-->BookRepository
+%%BookService..Book
+%%BookRepository..Book
+
+    BookRepository-->BookJpaRepository: Transforms between Book <--> BookJPAEntity
+%%BookJpaRepository..BookJPAEntity

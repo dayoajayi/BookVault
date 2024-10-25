@@ -38,8 +38,19 @@ public class DatabaseBookRepository implements BookRepository {
     }
 
     @Override
+    public Optional<Book> findByIsbn(Isbn isbn) {
+        return bookJPARepository.findByIsbn(isbn.value())
+                .map(this::toBook);
+    }
+
+    @Override
     public boolean existsById(BookId bookId) {
         return bookJPARepository.existsById(bookId);
+    }
+
+    @Override
+    public boolean existsByIsbn(Isbn isbn) {
+        return bookJPARepository.existsByIsbn(isbn.value());
     }
 
     @Override
