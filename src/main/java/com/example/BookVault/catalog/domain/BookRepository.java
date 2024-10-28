@@ -1,4 +1,4 @@
-package com.example.BookVault.domain;
+package com.example.BookVault.catalog.domain;
 
 import java.util.List;
 import java.util.Optional;

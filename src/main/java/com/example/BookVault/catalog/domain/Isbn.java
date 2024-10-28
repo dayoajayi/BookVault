@@ -1,4 +1,4 @@
-package com.example.BookVault.domain;
+package com.example.BookVault.catalog.domain;
 
 public record Isbn(String value) {
     public Isbn {

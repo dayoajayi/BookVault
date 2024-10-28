@@ -1,10 +1,10 @@
 package com.example.BookVault;
 
-import com.example.BookVault.api.BookController;
-import com.example.BookVault.domain.Book;
-import com.example.BookVault.domain.BookId;
-import com.example.BookVault.domain.BookService;
-import com.example.BookVault.domain.Isbn;
+import com.example.BookVault.catalog.api.BookController;
+import com.example.BookVault.catalog.domain.Book;
+import com.example.BookVault.catalog.domain.BookId;
+import com.example.BookVault.catalog.domain.BookService;
+import com.example.BookVault.catalog.domain.Isbn;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

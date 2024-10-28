@@ -1,6 +1,6 @@
-package com.example.BookVault.persistence;
+package com.example.BookVault.catalog.persistence;
 
-import com.example.BookVault.domain.BookId;
+import com.example.BookVault.catalog.domain.BookId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

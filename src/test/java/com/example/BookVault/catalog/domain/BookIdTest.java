@@ -1,4 +1,6 @@
-package com.example.BookVault.domain;
+package com.example.BookVault.catalog.domain;
+
+import com.example.BookVault.catalog.domain.BookId;
 
 import java.util.UUID;
 

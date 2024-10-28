@@ -1,6 +1,6 @@
 package com.example.BookVault;
 
-import com.example.BookVault.domain.*;
+import com.example.BookVault.catalog.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -8,11 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest (classes = {BookService.class, FakeBookRepository.class})
@@ -61,7 +58,7 @@ class BookServiceTests {
     @Test
     void canAddAndGetMultipleBooks() {
         BookId bookId1 = new BookId();
-        Isbn isbn1 = new Isbn("978-0-59-365453-8");
+        Isbn isbn1 = new Isbn("978-0-32-112521-7");
         Book bookToSave1 = new Book(bookId1, "Domain Driven Design", " Eric Evans", isbn1);
         Book savedBook1 = bookService.addBook(bookToSave1);
 
@@ -70,7 +67,7 @@ class BookServiceTests {
         assertEquals(List.of(savedBook1), savedBooks);
 
         BookId bookId2 = new BookId();
-        Isbn isbn2 = new Isbn("978-0-59-365453-8");
+        Isbn isbn2 = new Isbn("978-0-59-365453-3");
         Book bookToSave2 = new Book(bookId2, "TDD by Example", "Kent Beck", isbn2);
         Book savedBook2 = bookService.addBook(bookToSave2);
 
@@ -86,7 +83,7 @@ class BookServiceTests {
         BookId bookId1 = new BookId();
         Isbn isbn1 = new Isbn("978-0-59-365453-8");
         BookId bookId2 = new BookId();
-        Isbn isbn2 = new Isbn("978-0-59-365453-8");
+        Isbn isbn2 = new Isbn("978-0-59-365452-1");
         Book firstBook = new Book(bookId1, "Tell My Horse", "Zora Neale Hurston", isbn1);
         Book secondBook = new Book(bookId2, "Excellent Advice for Living", "Kevin Kelly", isbn2);
 

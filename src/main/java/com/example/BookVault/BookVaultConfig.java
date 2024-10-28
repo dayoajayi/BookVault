@@ -1,9 +1,9 @@
 package com.example.BookVault;
 
-import com.example.BookVault.domain.BookRepository;
-import com.example.BookVault.domain.BookService;
-import com.example.BookVault.persistence.BookJPARepository;
-import com.example.BookVault.persistence.DatabaseBookRepository;
+import com.example.BookVault.catalog.domain.BookRepository;
+import com.example.BookVault.catalog.domain.BookService;
+import com.example.BookVault.catalog.persistence.BookJPARepository;
+import com.example.BookVault.catalog.persistence.DatabaseBookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 

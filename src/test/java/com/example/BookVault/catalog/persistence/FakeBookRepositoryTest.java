@@ -1,6 +1,10 @@
-package com.example.BookVault;
+package com.example.BookVault.catalog.persistence;
 
-import com.example.BookVault.domain.*;
+import com.example.BookVault.FakeBookRepository;
+import com.example.BookVault.catalog.domain.Book;
+import com.example.BookVault.catalog.domain.BookId;
+import com.example.BookVault.catalog.domain.BookRepository;
+import com.example.BookVault.catalog.domain.Isbn;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

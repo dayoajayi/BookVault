@@ -1,4 +1,4 @@
-package com.example.BookVault.persistence;
+package com.example.BookVault.catalog.persistence;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

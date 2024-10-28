@@ -1,6 +1,6 @@
-package com.example.BookVault.api;
+package com.example.BookVault.catalog.api;
 
-import com.example.BookVault.domain.*;
+import com.example.BookVault.catalog.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

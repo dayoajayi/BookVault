@@ -1,9 +1,9 @@
 package com.example.BookVault;
 
-import com.example.BookVault.domain.Book;
-import com.example.BookVault.domain.BookId;
-import com.example.BookVault.domain.BookRepository;
-import com.example.BookVault.domain.Isbn;
+import com.example.BookVault.catalog.domain.Book;
+import com.example.BookVault.catalog.domain.BookId;
+import com.example.BookVault.catalog.domain.BookRepository;
+import com.example.BookVault.catalog.domain.Isbn;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;

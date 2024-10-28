@@ -1,4 +1,4 @@
-package com.example.BookVault.api;
+package com.example.BookVault.catalog.api;
 
 import lombok.Getter;
 import lombok.Setter;

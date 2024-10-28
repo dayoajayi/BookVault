@@ -1,7 +1,5 @@
-package com.example.BookVault.domain;
+package com.example.BookVault.catalog.domain;
 
-import jakarta.persistence.Embedded;
-import jakarta.persistence.EmbeddedId;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,11 +11,9 @@ import org.springframework.util.Assert;
 @Getter
 @Setter
 public class Book {
-    @EmbeddedId
     public BookId id;
     public String title;
     public String author;
-    @Embedded
     public Isbn isbn;
 
     public Book(String title, String author, Isbn isbn) {
