@@ -1,6 +1,5 @@
 package com.example.BookVault;
 
-import org.apache.coyote.Response;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,19 +21,6 @@ public class BookFeatureTests {
     @Autowired
     private WebTestClient client;
 
-
-    ResponseSpec addBook(TestBook book) {
-        return client.post().uri("/books")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue("{\"title\": \"%s\", \"author\": \"%s\", \"isbn\": \"%s\"}".formatted(book.title(), book.author(), book.isbn()))
-                .exchange();
-    }
-
-    ResponseSpec getBooks() {
-        return client.get().uri("/books")
-                .exchange()
-                .expectStatus().isOk();
-    }
 
     void addBookAndValidateCreated(TestBook book) {
         addBook(book)
@@ -75,6 +61,64 @@ public class BookFeatureTests {
         addBook(book).expectStatus().is4xxClientError();
     }
 
+
+    @Test
+    void shouldAllowBorrowingABookThatExistsInTheCatalog() {
+        // given
+        TestBook book = new TestBook("Atomic Habits", "James Clear", "978-0-59-365453-6"); // TODO real book w/ real isbn
+        addBookAndValidateCreated(book);
+
+        // when
+        borrowBook(book.isbn()).expectStatus().isOk();
+
+        // then
+        checkBorrowStatus(book.isbn())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.borrowed").isEqualTo(true);
+
+    }
+
+    @Test
+    void shouldNotAllowBorrowingABookThatExistsInTheCatalogButIsAlreadyCheckedOut() {
+        // given
+        TestBook book = new TestBook("Atomic Habits", "James Clear", "978-0-59-365453-7"); // TODO real book w/ real isbn
+        addBookAndValidateCreated(book);
+
+        // when
+        borrowBook(book.isbn()).expectStatus().isOk();
+
+        // then
+        borrowBook(book.isbn()).expectStatus().isBadRequest();
+    }
+
+    @Test
+    void shouldNotAllowBorrowingABookThatDoesNotExistInTheCatalog() {
+        borrowBook("not-registered-isbn").expectStatus().isNotFound();
+    }
+
+    ResponseSpec checkBorrowStatus(String isbn) {
+        return client.get().uri("/checkout-ledger/{isbn}", isbn)
+                .exchange();
+    }
+
+    ResponseSpec borrowBook(String isbn) {
+        return client.post().uri("/books/{isbn}/checkout", isbn)
+                .exchange();
+    }
+
+    ResponseSpec addBook(TestBook book) {
+        return client.post().uri("/books")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"title\": \"%s\", \"author\": \"%s\", \"isbn\": \"%s\"}".formatted(book.title(), book.author(), book.isbn()))
+                .exchange();
+    }
+
+    ResponseSpec getBooks() {
+        return client.get().uri("/books")
+                .exchange()
+                .expectStatus().isOk();
+    }
 
 
 /*

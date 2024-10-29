@@ -54,7 +54,6 @@ public class BookService {
     }
 
     public Optional<Book> getBookByIsbn(Isbn isbn) {
-        return null;
-        // todo: implement this with corresponding story
+        return bookRepository.findByIsbn(isbn);
     }
 }

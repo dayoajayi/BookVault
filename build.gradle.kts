@@ -5,7 +5,6 @@ plugins {
     kotlin("plugin.spring") version "1.8.0"
     java
 }
-println("hello!!!")
 
 group = "book-service"
 version = "0.0.1-SNAPSHOT"
@@ -42,9 +41,4 @@ springBoot {
     buildInfo()
 }
 
-tasks.register("hello") {
-    println("I'm registering hello world task")
-    doLast {
-        println("hello world")
-    }
-}
+

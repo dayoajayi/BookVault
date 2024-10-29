@@ -19,7 +19,7 @@ public class BookController {
 
     @PostMapping
     public ResponseEntity<BookDTO> addBook(@RequestBody BookDTO book) {
-        bookService.addBook(new Book(book.getTitle(), book.getAuthor(), new Isbn(book.getIsbn())));
+        bookService.addBook(toEntity(book));
         return ResponseEntity.status(HttpStatus.CREATED).body(book);
     }
 
@@ -41,7 +41,7 @@ public class BookController {
 
     @PutMapping("/{id}") // TODO change to update by ISBN
     public ResponseEntity<BookDTO> updateBook(@PathVariable String id, @RequestBody BookDTO book) {
-        bookService.updateBook(new BookId(UUID.fromString(id)), new Book(book.getTitle(), book.getAuthor(), new Isbn(book.getIsbn())));
+        bookService.updateBook(new BookId(UUID.fromString(id)), toEntity(book));
 
         return ResponseEntity.ok(book);
     }
@@ -63,5 +63,9 @@ public class BookController {
         bookDTO.setAuthor(book.getAuthor());
         bookDTO.setIsbn(book.getIsbn().value());
         return bookDTO;
+    }
+
+    private Book toEntity(BookDTO bookDTO) {
+        return new Book(bookDTO.getTitle(), bookDTO.getAuthor(), new Isbn(bookDTO.getIsbn()));
     }
 }
