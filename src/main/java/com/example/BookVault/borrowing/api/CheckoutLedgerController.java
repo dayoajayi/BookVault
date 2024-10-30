@@ -3,7 +3,7 @@ package com.example.BookVault.borrowing.api;
 import com.example.BookVault.borrowing.domain.BookAlreadyCheckedOutException;
 import com.example.BookVault.borrowing.domain.CheckoutLedgerEntry;
 import com.example.BookVault.borrowing.domain.CheckoutLedgerService;
-import com.example.BookVault.catalog.domain.BookNotFoundException;
+import com.example.BookVault.catalog.BookNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

@@ -21,11 +21,13 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-web")
     testImplementation("org.springframework.boot:spring-boot-starter-webflux")
     implementation("org.springframework.kafka:spring-kafka")
+    implementation("org.springframework.modulith:spring-modulith-starter-jpa:1.2.5")
     runtimeOnly("com.h2database:h2")
     compileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")
+    testImplementation("org.springframework.modulith:spring-modulith-starter-test:1.2.5")
 }
 
 tasks.withType<JavaCompile> {

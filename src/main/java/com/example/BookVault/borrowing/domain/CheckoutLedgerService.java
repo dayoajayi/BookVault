@@ -1,8 +1,7 @@
 package com.example.BookVault.borrowing.domain;
 
-import com.example.BookVault.catalog.domain.BookNotFoundException;
-import com.example.BookVault.catalog.domain.BookService;
-import com.example.BookVault.catalog.domain.Isbn;
+import com.example.BookVault.catalog.BookApi;
+import com.example.BookVault.catalog.BookNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -11,11 +10,11 @@ import java.util.ArrayList;
 public class CheckoutLedgerService {
 
     private ArrayList<String> checkoutLedger;
-    private BookService bookService;
+    private BookApi bookApi;
 
-    CheckoutLedgerService(BookService bookService) {
+    CheckoutLedgerService(BookApi bookApi) {
         checkoutLedger = new ArrayList<>();
-        this.bookService = bookService;
+        this.bookApi = bookApi;
     }
 
     public CheckoutLedger getCheckoutLedger() {
@@ -23,13 +22,14 @@ public class CheckoutLedgerService {
     }
 
     public void checkoutBook(String isbn) {
-        if (bookService.getBookByIsbn(new Isbn(isbn)).isEmpty()) {
+        if (bookApi.getBookByIsbn(isbn).isEmpty()) {
             throw new BookNotFoundException(isbn);
         }
 
         if (checkoutLedger.contains(isbn)) {
             throw new BookAlreadyCheckedOutException(isbn);
         }
+
         checkoutLedger.add(isbn);
     }
 

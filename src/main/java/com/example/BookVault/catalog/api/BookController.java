@@ -1,5 +1,7 @@
 package com.example.BookVault.catalog.api;
 
+import com.example.BookVault.catalog.BookAlreadyExistsException;
+import com.example.BookVault.catalog.BookDTO;
 import com.example.BookVault.catalog.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

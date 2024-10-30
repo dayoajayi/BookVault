@@ -1,5 +1,7 @@
 package com.example.BookVault.catalog.domain;
 
+import com.example.BookVault.catalog.BookAlreadyExistsException;
+import com.example.BookVault.catalog.BookNotFoundException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

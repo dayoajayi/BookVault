@@ -1,4 +1,4 @@
-package com.example.BookVault.catalog.domain;
+package com.example.BookVault.catalog;
 
 public class BookNotFoundException extends RuntimeException {
     public BookNotFoundException(String s) {

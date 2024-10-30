@@ -1,5 +1,6 @@
 package com.example.BookVault;
 
+import com.example.BookVault.catalog.BookNotFoundException;
 import com.example.BookVault.catalog.domain.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

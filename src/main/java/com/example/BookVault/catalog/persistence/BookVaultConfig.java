@@ -1,18 +1,12 @@
-package com.example.BookVault;
+package com.example.BookVault.catalog.persistence;
 
 import com.example.BookVault.catalog.domain.BookRepository;
 import com.example.BookVault.catalog.domain.BookService;
-import com.example.BookVault.catalog.persistence.BookJPARepository;
-import com.example.BookVault.catalog.persistence.DatabaseBookRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BookVaultConfig {
-
-    public BookService bookService(BookRepository bookRepository) {
-        return new BookService(bookRepository);
-    }
 
     public BookRepository bookRepository(@Autowired BookJPARepository bookJPARepository) {
         return new DatabaseBookRepository(bookJPARepository);
