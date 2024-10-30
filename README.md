@@ -27,18 +27,18 @@ BookVault is a robust book management application designed to keep track of book
 
 2. **Build the project**:
    ```bash
-   mvn clean install
+   ./gradlew build
    ```
 
 3. **Run the application**:
    ```bash
-   mvn spring-boot:run
+   ./gradlew bootRun
    ```
 
 ### **Testing**
 To run the test suite, execute the following command:
 ```bash
-mvn test
+./gradlew test
 ```
 
 ## **Usage**

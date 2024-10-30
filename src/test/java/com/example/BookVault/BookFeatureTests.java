@@ -65,7 +65,7 @@ public class BookFeatureTests {
     @Test
     void shouldAllowBorrowingABookThatExistsInTheCatalog() {
         // given
-        TestBook book = new TestBook("Atomic Habits", "James Clear", "978-0-59-365453-6"); // TODO real book w/ real isbn
+        TestBook book = new TestBook("Domain Storytelling", "Stefan Hofer", "978-3-98-890019-7");
         addBookAndValidateCreated(book);
 
         // when
@@ -82,7 +82,7 @@ public class BookFeatureTests {
     @Test
     void shouldNotAllowBorrowingABookThatExistsInTheCatalogButIsAlreadyCheckedOut() {
         // given
-        TestBook book = new TestBook("Atomic Habits", "James Clear", "978-0-59-365453-7"); // TODO real book w/ real isbn
+        TestBook book = new TestBook("Test Driven Development: By Example", "Kent Beck", "978-0-32-114653-3");
         addBookAndValidateCreated(book);
 
         // when

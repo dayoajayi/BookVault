@@ -5,6 +5,7 @@ import com.example.BookVault.catalog.domain.BookId;
 import com.example.BookVault.catalog.domain.BookRepository;
 import com.example.BookVault.catalog.domain.Isbn;
 import jakarta.transaction.Transactional;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Optional;
