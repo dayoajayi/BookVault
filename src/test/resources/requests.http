@@ -3,9 +3,9 @@ POST http://localhost:8080/books
 Content-Type: application/json
 
 {
-  "id": 1,
   "title": "The Four Agreements",
-  "author": "Don Miguel Ruiz"
+  "author": "Don Miguel Ruiz",
+  "isbn": "9781878424310"
 }
 
 ### Get all books
@@ -14,6 +14,10 @@ Content-Type: application/json
 
 ### Get a book by ID
 GET http://localhost:8080/books/1
+Content-Type: application/json
+
+### Get a book by ISBN
+GET http://localhost:8080/books/9781878424310
 Content-Type: application/json
 
 ### Update a book
@@ -27,4 +31,8 @@ Content-Type: application/json
 
 ### Delete a book by ID
 DELETE http://localhost:8080/books/1
+Content-Type: application/json
+
+### Borrow a book
+POST localhost:8080/books/9781878424310/checkout
 Content-Type: application/json
