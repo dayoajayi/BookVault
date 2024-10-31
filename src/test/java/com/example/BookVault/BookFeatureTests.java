@@ -97,6 +97,51 @@ public class BookFeatureTests {
         borrowBook("not-registered-isbn").expectStatus().isNotFound();
     }
 
+    @Test
+    void shouldAllowCheckedOutBooksToBeReturned() {
+        // given
+        TestBook book = new TestBook("Refactoring", "Martin Fowler", "978-0-13-475759-9");
+        addBookAndValidateCreated(book);
+
+        borrowBook(book.isbn()).expectStatus().isOk();
+
+        // when
+        returnBook(book.isbn());
+
+        // then
+        checkBorrowStatus(book.isbn())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.borrowed").isEqualTo(false);
+
+    }
+
+    @Test
+    void shouldNotAllowAvailableBooksToBeReturned() {
+        // given
+        TestBook book = new TestBook(
+                "Design Patterns: Elements of Reusable Object-Oriented Software",
+                "Gamma Erich, Helm Richard, Johnson Ralph, Vlissides John",
+                "978-0-32-170069-8"
+        );
+        addBookAndValidateCreated(book);
+
+        // when
+        returnBook(book.isbn())
+                .expectStatus().isBadRequest();
+
+        // then
+        checkBorrowStatus(book.isbn())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.borrowed").isEqualTo(false);
+    }
+
+    @Test
+    void shouldNotAllowReturningABookThatDoesNotExistInTheCatalog() {
+        returnBook("not-registered-isbn").expectStatus().isNotFound();
+    }
+
     ResponseSpec checkBorrowStatus(String isbn) {
         return client.get().uri("/checkout-ledger/{isbn}", isbn)
                 .exchange();
@@ -104,6 +149,11 @@ public class BookFeatureTests {
 
     ResponseSpec borrowBook(String isbn) {
         return client.post().uri("/books/{isbn}/checkout", isbn)
+                .exchange();
+    }
+
+    ResponseSpec returnBook(String isbn) {
+        return client.post().uri("/books/{isbn}/return", isbn)
                 .exchange();
     }
 

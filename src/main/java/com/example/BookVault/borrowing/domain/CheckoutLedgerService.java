@@ -36,4 +36,16 @@ public class CheckoutLedgerService {
     public CheckoutLedgerEntry getCheckoutLedgerEntry(String isbn) {
         return new CheckoutLedgerEntry(isbn, checkoutLedger.contains(isbn));
     }
+
+    public void returnBook(String isbn) {
+        if (bookApi.getBookByIsbn(isbn).isEmpty()) {
+            throw new BookNotFoundException(isbn);
+        }
+
+        if (!checkoutLedger.contains(isbn)) {
+            throw new BookNotCheckedOutException(isbn);
+        }
+
+        checkoutLedger.remove(isbn);
+    }
 }

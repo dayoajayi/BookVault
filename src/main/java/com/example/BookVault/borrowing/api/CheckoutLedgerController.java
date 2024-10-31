@@ -1,6 +1,7 @@
 package com.example.BookVault.borrowing.api;
 
 import com.example.BookVault.borrowing.domain.BookAlreadyCheckedOutException;
+import com.example.BookVault.borrowing.domain.BookNotCheckedOutException;
 import com.example.BookVault.borrowing.domain.CheckoutLedgerEntry;
 import com.example.BookVault.borrowing.domain.CheckoutLedgerService;
 import com.example.BookVault.catalog.BookNotFoundException;
@@ -25,6 +26,12 @@ public class CheckoutLedgerController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("books/{isbn}/return")
+    public ResponseEntity<Void> returnBook(@PathVariable String isbn) {
+        checkoutLedgerService.returnBook(isbn);
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping
     public ResponseEntity<List<CheckoutLedgerDTO>> getCheckoutLedger() {
         checkoutLedgerService.getCheckoutLedger();
@@ -39,6 +46,11 @@ public class CheckoutLedgerController {
 
     @ExceptionHandler(BookAlreadyCheckedOutException.class)
     public ResponseEntity<String> handleBookAlreadyCheckedOutException(BookAlreadyCheckedOutException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(BookNotCheckedOutException.class)
+    public ResponseEntity<String> handleBookNotCheckedOutException(BookNotCheckedOutException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 

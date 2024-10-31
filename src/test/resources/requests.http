@@ -36,3 +36,11 @@ Content-Type: application/json
 ### Borrow a book
 POST localhost:8080/books/9781878424310/checkout
 Content-Type: application/json
+
+### Get a book checkout status
+GET localhost:8080/checkout-ledger/9781878424310
+Content-Type: application/json
+
+### Return a book
+POST localhost:8080/books/9781878424310/return
+Content-Type: application/json
