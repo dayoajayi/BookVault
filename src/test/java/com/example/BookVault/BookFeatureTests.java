@@ -10,6 +10,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -20,16 +24,6 @@ public class BookFeatureTests {
 
     @Autowired
     private WebTestClient client;
-
-
-    void addBookAndValidateCreated(TestBook book) {
-        addBook(book)
-                .expectStatus().isCreated()
-                .expectBody()
-                .jsonPath("$.title").isEqualTo(book.title())
-                .jsonPath("$.author").isEqualTo(book.author())
-                .jsonPath("$.isbn").isEqualTo(book.isbn());
-    }
 
     @Test
     void shouldAddBookWhenBookDoesNotExist() {
@@ -77,6 +71,43 @@ public class BookFeatureTests {
                 .expectBody()
                 .jsonPath("$.borrowed").isEqualTo(true);
 
+    }
+
+    @Test
+    void shouldSetDueDateWhenBookIsCheckedOut() {
+        // given
+        LocalDate now = LocalDate.parse("2024-11-01");
+        setNow(now);
+
+        TestBook book = new TestBook("Growing Object-Oriented Software, Guided by Tests", "Steve Freeman, Nat Pryce", "978-0-32-150362-6");
+        addBookAndValidateCreated(book);
+
+        // when
+        borrowBook(book.isbn()).expectStatus().isOk();
+
+        // then
+        checkBorrowStatus(book.isbn())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.dueDate").isEqualTo("2024-12-01");
+    }
+
+    @Test
+    void shouldHaveStatusOverdueWhenBookIsCheckedOutPastDueDate() {
+        // given
+        setNow(LocalDate.parse("2024-11-01"));
+
+        TestBook book = new TestBook("Growing Object-Oriented Software, Guided by Tests", "Steve Freeman, Nat Pryce", "978-0-32-150362-6");
+        addBookAndValidateCreated(book);
+        borrowBook(book.isbn()).expectStatus().isOk();
+
+        setNow(LocalDate.parse("2024-12-02"));
+
+        // then
+        checkBorrowStatus(book.isbn())
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo("OVERDUE");
     }
 
     @Test
@@ -142,6 +173,15 @@ public class BookFeatureTests {
         returnBook("not-registered-isbn").expectStatus().isNotFound();
     }
 
+    void addBookAndValidateCreated(TestBook book) {
+        addBook(book)
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.title").isEqualTo(book.title())
+                .jsonPath("$.author").isEqualTo(book.author())
+                .jsonPath("$.isbn").isEqualTo(book.isbn());
+    }
+
     ResponseSpec checkBorrowStatus(String isbn) {
         return client.get().uri("/checkout-ledger/{isbn}", isbn)
                 .exchange();
@@ -166,6 +206,12 @@ public class BookFeatureTests {
 
     ResponseSpec getBooks() {
         return client.get().uri("/books")
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    void setNow(LocalDate now) {
+        client.post().uri("/test-time/{now}", now)
                 .exchange()
                 .expectStatus().isOk();
     }
