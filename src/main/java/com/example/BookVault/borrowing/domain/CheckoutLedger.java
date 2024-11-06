@@ -1,4 +1,7 @@
 package com.example.BookVault.borrowing.domain;
 
-public class CheckoutLedger {
+import java.util.Map;
+
+public record CheckoutLedger(Map<String, CheckoutLedgerEntry> entries) {
+
 }

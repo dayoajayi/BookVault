@@ -1,4 +1,6 @@
 package com.example.BookVault.borrowing.domain;
 
-public record CheckoutLedgerEntry(String isbn, boolean isBorrowed) {
+import java.time.LocalDate;
+
+public record CheckoutLedgerEntry(String isbn, LocalDate dueDate,  CheckoutStatus checkoutStatus) {
 }

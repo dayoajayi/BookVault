@@ -3,28 +3,34 @@ package com.example.BookVault.borrowing.domain;
 import com.example.BookVault.TimeProvider;
 import com.example.BookVault.catalog.BookApi;
 import com.example.BookVault.catalog.BookNotFoundException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 public class CheckoutLedgerService {
 
-    private ArrayList<String> checkoutLedger;
-    private BookApi bookApi;
-    private TimeProvider timeProvider;
+//    private final ArrayList<CheckoutLedgerEntry> checkoutLedger;
+    private final Map<String, CheckoutLedgerEntry> checkoutLedger ;
+    private final Map<String, LocalDate> checkoutLedgerTimed  = new HashMap<>();
+    private final BookApi bookApi;
+    private final TimeProvider timeProvider;
 
     CheckoutLedgerService(
             BookApi bookApi,
             TimeProvider timeProvider
     ) {
-        checkoutLedger = new ArrayList<>();
+        checkoutLedger = new HashMap<>();
         this.bookApi = bookApi;
         this.timeProvider = timeProvider;
     }
 
     public CheckoutLedger getCheckoutLedger() {
-        return null;
+        return new CheckoutLedger(checkoutLedger);
     }
 
     public void checkoutBook(String isbn) {
@@ -32,26 +38,42 @@ public class CheckoutLedgerService {
             throw new BookNotFoundException(isbn);
         }
 
-        if (checkoutLedger.contains(isbn)) {
+        if (checkoutLedger.containsKey(isbn)) {
+
             throw new BookAlreadyCheckedOutException(isbn);
         }
+        LocalDate dueDate = timeProvider.now().plusDays(30);
 
-        checkoutLedger.add(isbn);
+        checkoutLedger.put(isbn, new CheckoutLedgerEntry(isbn, dueDate, CheckoutStatus.CHECKED_OUT));
+        checkoutLedgerTimed.put(isbn,  dueDate);
     }
 
     public CheckoutLedgerEntry getCheckoutLedgerEntry(String isbn) {
-        return new CheckoutLedgerEntry(isbn, checkoutLedger.contains(isbn));
+        LocalDate dueDate = checkoutLedgerTimed.get(isbn);
+
+        if (dueDate == null) {
+            throw new BookNotFoundException(isbn);
+        }
+
+        if (timeProvider.now().isAfter(dueDate)) {
+            return new CheckoutLedgerEntry(isbn, dueDate, CheckoutStatus.OVERDUE);
+        }
+
+        return new CheckoutLedgerEntry(isbn, dueDate, CheckoutStatus.CHECKED_OUT);
     }
+
 
     public void returnBook(String isbn) {
         if (bookApi.getBookByIsbn(isbn).isEmpty()) {
             throw new BookNotFoundException(isbn);
         }
 
-        if (!checkoutLedger.contains(isbn)) {
+        CheckoutLedgerEntry entry = checkoutLedger.get(isbn);
+        if (entry == null || entry.checkoutStatus() != CheckoutStatus.CHECKED_OUT) {
             throw new BookNotCheckedOutException(isbn);
         }
 
-        checkoutLedger.remove(isbn);
+        // Update the entry status to RETURNED
+        checkoutLedger.put(isbn, new CheckoutLedgerEntry(isbn, entry.dueDate(), CheckoutStatus.RETURNED));
     }
 }

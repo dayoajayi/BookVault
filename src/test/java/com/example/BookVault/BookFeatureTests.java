@@ -1,29 +1,41 @@
 package com.example.BookVault;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
+@Import(FeatureTestsConfiguration.class)
 public class BookFeatureTests {
 
     @Autowired
-    private TestRestTemplate mockMvc;
-
-    @Autowired
     private WebTestClient client;
+
+    @MockBean
+    private TimeProvider timeProvider;;
+
+    @BeforeEach
+    void setup() {
+        LocalDate fixedDate = LocalDate.parse("2024-11-01");
+        when(timeProvider.now()).thenReturn(fixedDate);
+    }
+
 
     @Test
     void shouldAddBookWhenBookDoesNotExist() {
@@ -69,8 +81,7 @@ public class BookFeatureTests {
         checkBorrowStatus(book.isbn())
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.borrowed").isEqualTo(true);
-
+                .jsonPath("$.checkoutStatus").isEqualTo("CHECKED_OUT");
     }
 
     @Test
@@ -79,7 +90,7 @@ public class BookFeatureTests {
         LocalDate now = LocalDate.parse("2024-11-01");
         setNow(now);
 
-        TestBook book = new TestBook("Growing Object-Oriented Software, Guided by Tests", "Steve Freeman, Nat Pryce", "978-0-32-150362-6");
+        TestBook book = new TestBook("Designing Data-Intensive Applications", "Martin Kleppmann", "978-1-44-937332-0");
         addBookAndValidateCreated(book);
 
         // when
@@ -90,15 +101,16 @@ public class BookFeatureTests {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.dueDate").isEqualTo("2024-12-01");
+
     }
 
     @Test
     void shouldHaveStatusOverdueWhenBookIsCheckedOutPastDueDate() {
         // given
         setNow(LocalDate.parse("2024-11-01"));
-
         TestBook book = new TestBook("Growing Object-Oriented Software, Guided by Tests", "Steve Freeman, Nat Pryce", "978-0-32-150362-6");
         addBookAndValidateCreated(book);
+
         borrowBook(book.isbn()).expectStatus().isOk();
 
         setNow(LocalDate.parse("2024-12-02"));
@@ -107,7 +119,7 @@ public class BookFeatureTests {
         checkBorrowStatus(book.isbn())
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.status").isEqualTo("OVERDUE");
+                .jsonPath("$.checkoutStatus").isEqualTo("OVERDUE");
     }
 
     @Test
@@ -143,7 +155,7 @@ public class BookFeatureTests {
         checkBorrowStatus(book.isbn())
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.borrowed").isEqualTo(false);
+                .jsonPath("$.checkoutStatus").isEqualTo("RETURNED");
 
     }
 
@@ -165,7 +177,7 @@ public class BookFeatureTests {
         checkBorrowStatus(book.isbn())
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.borrowed").isEqualTo(false);
+                .jsonPath("$.checkoutStatus").isEqualTo("AVAILABLE");
     }
 
     @Test
