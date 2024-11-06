@@ -4,7 +4,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 
-@Component
+//@Component
 public class TestTimeProvider implements TimeProvider {
 
     private LocalDate now = LocalDate.now();
@@ -14,9 +14,7 @@ public class TestTimeProvider implements TimeProvider {
         return now;
     }
 
-
     public void setNow(LocalDate now) {
         this.now = now;
     }
-
 }

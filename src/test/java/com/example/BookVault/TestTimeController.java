@@ -1,6 +1,8 @@
 package com.example.BookVault;
 
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
@@ -8,14 +10,14 @@ import java.time.LocalDate;
 @RestController
 public class TestTimeController {
 
-    private TestTimeProvider timeProvider;
+    private final TestTimeProvider timeProvider;
 
     public TestTimeController(TestTimeProvider timeProvider) {
         this.timeProvider = timeProvider;
     }
 
     @PostMapping("/test-time/{now}")
-    public void testTime(LocalDate now) {
+    public void testTime(@PathVariable LocalDate now) {
         timeProvider.setNow(now);
     }
 }

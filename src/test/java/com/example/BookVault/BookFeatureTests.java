@@ -27,16 +27,6 @@ public class BookFeatureTests {
     @Autowired
     private WebTestClient client;
 
-    @MockBean
-    private TimeProvider timeProvider;;
-
-    @BeforeEach
-    void setup() {
-        LocalDate fixedDate = LocalDate.parse("2024-11-01");
-        when(timeProvider.now()).thenReturn(fixedDate);
-    }
-
-
     @Test
     void shouldAddBookWhenBookDoesNotExist() {
 
@@ -141,6 +131,11 @@ public class BookFeatureTests {
     }
 
     @Test
+    void shouldNotReturnCheckoutStatusForBookThatDoesNotExistInCatalog() {
+        checkBorrowStatus("not-registered-isbn").expectStatus().isNotFound();
+    }
+
+    @Test
     void shouldAllowCheckedOutBooksToBeReturned() {
         // given
         TestBook book = new TestBook("Refactoring", "Martin Fowler", "978-0-13-475759-9");
@@ -155,7 +150,7 @@ public class BookFeatureTests {
         checkBorrowStatus(book.isbn())
                 .expectStatus().isOk()
                 .expectBody()
-                .jsonPath("$.checkoutStatus").isEqualTo("RETURNED");
+                .jsonPath("$.checkoutStatus").isEqualTo("AVAILABLE");
 
     }
 
@@ -183,6 +178,28 @@ public class BookFeatureTests {
     @Test
     void shouldNotAllowReturningABookThatDoesNotExistInTheCatalog() {
         returnBook("not-registered-isbn").expectStatus().isNotFound();
+    }
+
+    @Test
+    void shouldTrackFineForOverdueBooks() {
+        // given
+        setNow(LocalDate.parse("2024-11-01"));
+        TestBook book = new TestBook("The Pragmatic Programmer", "Andrew Hunt, David Thomas", "978-0-20-161622-4");
+        addBookAndValidateCreated(book);
+
+        borrowBook(book.isbn()).expectStatus().isOk();
+
+        setNow(LocalDate.parse("2024-12-04"));
+
+        // then
+        checkAccountBalance().expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.balance").isEqualTo(3.0);
+    }
+
+    ResponseSpec checkAccountBalance() {
+        return client.get().uri("/account/balance")
+                .exchange();
     }
 
     void addBookAndValidateCreated(TestBook book) {
@@ -223,7 +240,8 @@ public class BookFeatureTests {
     }
 
     void setNow(LocalDate now) {
-        client.post().uri("/test-time/{now}", now)
+
+        client.post().uri("/test-time/{now}", now.toString())
                 .exchange()
                 .expectStatus().isOk();
     }

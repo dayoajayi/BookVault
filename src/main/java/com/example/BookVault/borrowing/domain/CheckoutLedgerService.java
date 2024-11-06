@@ -3,20 +3,18 @@ package com.example.BookVault.borrowing.domain;
 import com.example.BookVault.TimeProvider;
 import com.example.BookVault.catalog.BookApi;
 import com.example.BookVault.catalog.BookNotFoundException;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 @Service
 public class CheckoutLedgerService {
 
-//    private final ArrayList<CheckoutLedgerEntry> checkoutLedger;
-    private final Map<String, CheckoutLedgerEntry> checkoutLedger ;
-    private final Map<String, LocalDate> checkoutLedgerTimed  = new HashMap<>();
+    //    private final ArrayList<CheckoutLedgerEntry> checkoutLedger;
+    private final Map<String, CheckoutLedgerEntry> checkoutLedger;
+    private final Map<String, LocalDate> checkoutLedgerTimed = new HashMap<>();
     private final BookApi bookApi;
     private final TimeProvider timeProvider;
 
@@ -45,14 +43,19 @@ public class CheckoutLedgerService {
         LocalDate dueDate = timeProvider.now().plusDays(30);
 
         checkoutLedger.put(isbn, new CheckoutLedgerEntry(isbn, dueDate, CheckoutStatus.CHECKED_OUT));
-        checkoutLedgerTimed.put(isbn,  dueDate);
+        checkoutLedgerTimed.put(isbn, dueDate);
     }
 
     public CheckoutLedgerEntry getCheckoutLedgerEntry(String isbn) {
+
+        if (bookApi.getBookByIsbn(isbn).isEmpty()) {
+            throw new BookNotFoundException(isbn);
+        }
+
         LocalDate dueDate = checkoutLedgerTimed.get(isbn);
 
         if (dueDate == null) {
-            throw new BookNotFoundException(isbn);
+            return new CheckoutLedgerEntry(isbn, null, CheckoutStatus.AVAILABLE);
         }
 
         if (timeProvider.now().isAfter(dueDate)) {
@@ -68,12 +71,12 @@ public class CheckoutLedgerService {
             throw new BookNotFoundException(isbn);
         }
 
-        CheckoutLedgerEntry entry = checkoutLedger.get(isbn);
-        if (entry == null || entry.checkoutStatus() != CheckoutStatus.CHECKED_OUT) {
+        LocalDate entry = checkoutLedgerTimed.get(isbn);
+        if (entry == null) {
             throw new BookNotCheckedOutException(isbn);
         }
 
         // Update the entry status to RETURNED
-        checkoutLedger.put(isbn, new CheckoutLedgerEntry(isbn, entry.dueDate(), CheckoutStatus.RETURNED));
+        checkoutLedgerTimed.remove(isbn);
     }
 }
