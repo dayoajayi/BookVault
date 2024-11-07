@@ -12,8 +12,7 @@ import java.util.Map;
 @Service
 public class CheckoutLedgerService {
 
-    //    private final ArrayList<CheckoutLedgerEntry> checkoutLedger;
-    private final Map<String, CheckoutLedgerEntry> checkoutLedger;
+    private final Map<String, CheckoutLedgerEntry> checkoutLedger;  //todo: undo this implementation
     private final Map<String, LocalDate> checkoutLedgerTimed = new HashMap<>();
     private final BookApi bookApi;
     private final TimeProvider timeProvider;
