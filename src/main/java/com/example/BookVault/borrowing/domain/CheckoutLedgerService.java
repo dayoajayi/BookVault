@@ -1,35 +1,55 @@
 package com.example.BookVault.borrowing.domain;
 
-import com.example.BookVault.TimeProvider;
+import com.example.BookVault.events.AccountCurrentEvent;
+import com.example.BookVault.events.AccountDelinquentEvent;
+import com.example.BookVault.events.BookCheckedOutEvent;
+import com.example.BookVault.events.BookReturnedEvent;
+import com.example.BookVault.time.DateUpdatedEvent;
 import com.example.BookVault.catalog.BookApi;
 import com.example.BookVault.catalog.BookNotFoundException;
+import jakarta.transaction.Transactional;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.modulith.events.ApplicationModuleListener;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class CheckoutLedgerService {
 
-    private final Map<String, CheckoutLedgerEntry> checkoutLedger;  //todo: undo this implementation
-    private final Map<String, LocalDate> checkoutLedgerTimed = new HashMap<>();
+    private final ApplicationEventPublisher events;
     private final BookApi bookApi;
-    private final TimeProvider timeProvider;
+
+    private final Map<String, LocalDate> checkoutLedger = new HashMap<>();
+    private LocalDate now = LocalDate.now();
+    private boolean accountDelinquent = false;
 
     CheckoutLedgerService(
             BookApi bookApi,
-            TimeProvider timeProvider
+            ApplicationEventPublisher events
     ) {
-        checkoutLedger = new HashMap<>();
         this.bookApi = bookApi;
-        this.timeProvider = timeProvider;
+        this.events = events;
+    }
+
+    public void reset() {
+        checkoutLedger.clear();
+        accountDelinquent = false;
     }
 
     public CheckoutLedger getCheckoutLedger() {
-        return new CheckoutLedger(checkoutLedger);
+
+        return new CheckoutLedger(checkoutLedger
+                .entrySet()
+                .stream()
+                .map(entry -> new CheckoutLedgerEntry(entry.getKey(), entry.getValue(), CheckoutStatus.CHECKED_OUT)) // TODO write a test that checks the status
+                .collect(Collectors.toMap(CheckoutLedgerEntry::isbn, entry -> entry)));
     }
 
+    @Transactional
     public void checkoutBook(String isbn) {
         if (bookApi.getBookByIsbn(isbn).isEmpty()) {
             throw new BookNotFoundException(isbn);
@@ -39,10 +59,15 @@ public class CheckoutLedgerService {
 
             throw new BookAlreadyCheckedOutException(isbn);
         }
-        LocalDate dueDate = timeProvider.now().plusDays(30);
 
-        checkoutLedger.put(isbn, new CheckoutLedgerEntry(isbn, dueDate, CheckoutStatus.CHECKED_OUT));
-        checkoutLedgerTimed.put(isbn, dueDate);
+        if (accountDelinquent) {
+            throw new AccountDelinquentException();
+        }
+
+        LocalDate dueDate = now.plusDays(30);
+
+        checkoutLedger.put(isbn, dueDate);
+        events.publishEvent(new BookCheckedOutEvent(isbn, dueDate));
     }
 
     public CheckoutLedgerEntry getCheckoutLedgerEntry(String isbn) {
@@ -51,13 +76,13 @@ public class CheckoutLedgerService {
             throw new BookNotFoundException(isbn);
         }
 
-        LocalDate dueDate = checkoutLedgerTimed.get(isbn);
+        LocalDate dueDate = checkoutLedger.get(isbn);
 
         if (dueDate == null) {
             return new CheckoutLedgerEntry(isbn, null, CheckoutStatus.AVAILABLE);
         }
 
-        if (timeProvider.now().isAfter(dueDate)) {
+        if (now.isAfter(dueDate)) {
             return new CheckoutLedgerEntry(isbn, dueDate, CheckoutStatus.OVERDUE);
         }
 
@@ -65,17 +90,33 @@ public class CheckoutLedgerService {
     }
 
 
+    @Transactional
     public void returnBook(String isbn) {
         if (bookApi.getBookByIsbn(isbn).isEmpty()) {
             throw new BookNotFoundException(isbn);
         }
 
-        LocalDate entry = checkoutLedgerTimed.get(isbn);
+        LocalDate entry = checkoutLedger.get(isbn);
         if (entry == null) {
             throw new BookNotCheckedOutException(isbn);
         }
 
-        // Update the entry status to RETURNED
-        checkoutLedgerTimed.remove(isbn);
+        checkoutLedger.remove(isbn);
+        events.publishEvent(new BookReturnedEvent(isbn));
+    }
+
+    @ApplicationModuleListener
+    void on(DateUpdatedEvent event) {
+        now = event.date();
+    }
+
+    @ApplicationModuleListener
+    void on(AccountDelinquentEvent event) {
+        accountDelinquent = true;
+    }
+
+    @ApplicationModuleListener
+    void on(AccountCurrentEvent event) {
+        accountDelinquent = false;
     }
 }

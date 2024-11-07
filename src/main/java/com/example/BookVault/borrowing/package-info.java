@@ -1,4 +1,4 @@
 @org.springframework.modulith.ApplicationModule(
-        allowedDependencies = "catalog"
+        allowedDependencies = {"catalog", "time", "events"}
 )
 package com.example.BookVault.borrowing;

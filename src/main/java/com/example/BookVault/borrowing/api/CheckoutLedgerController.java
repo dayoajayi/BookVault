@@ -1,9 +1,6 @@
 package com.example.BookVault.borrowing.api;
 
-import com.example.BookVault.borrowing.domain.BookAlreadyCheckedOutException;
-import com.example.BookVault.borrowing.domain.BookNotCheckedOutException;
-import com.example.BookVault.borrowing.domain.CheckoutLedgerEntry;
-import com.example.BookVault.borrowing.domain.CheckoutLedgerService;
+import com.example.BookVault.borrowing.domain.*;
 import com.example.BookVault.catalog.BookNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,6 +43,11 @@ public class CheckoutLedgerController {
 
     @ExceptionHandler(BookAlreadyCheckedOutException.class)
     public ResponseEntity<String> handleBookAlreadyCheckedOutException(BookAlreadyCheckedOutException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(AccountDelinquentException.class)
+    public ResponseEntity<String> handleAccountDelinquentException(AccountDelinquentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 

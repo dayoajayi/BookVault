@@ -12,5 +12,4 @@ public interface BookRepository {
     boolean existsById(BookId bookId);
     boolean existsByIsbn(Isbn isbn);
     void deleteById(BookId bookId);
-
 }

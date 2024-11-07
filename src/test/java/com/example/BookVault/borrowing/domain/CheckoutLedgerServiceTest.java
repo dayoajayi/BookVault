@@ -3,9 +3,10 @@ package com.example.BookVault.borrowing.domain;
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.example.BookVault.TimeProvider;
+import com.example.BookVault.time.TimeProvider;
 import com.example.BookVault.catalog.BookApi;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -30,6 +31,7 @@ public class CheckoutLedgerServiceTest {
     }
 
     @Test
+    @Disabled("No longer valid, shows our previous strategy for managing time")
     void shouldCalculateDueDate30DaysAfterCurrentDate() {
         // Given
         String isbn = "978-0-32-150362-6";

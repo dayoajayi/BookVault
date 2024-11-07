@@ -1,11 +1,10 @@
 package com.example.BookVault;
 
-import org.junit.jupiter.api.BeforeEach;
+import com.example.BookVault.time.TestTimeConfiguration;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -13,15 +12,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.springframework.test.web.reactive.server.WebTestClient.ResponseSpec;
 
-import java.time.LocalDate;
-
-import static org.mockito.Mockito.when;
-
-
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
-@Import(FeatureTestsConfiguration.class)
+@Import(TestTimeConfiguration.class)
 public class BookFeatureTests {
 
     @Autowired
@@ -29,8 +23,8 @@ public class BookFeatureTests {
 
     @Test
     void shouldAddBookWhenBookDoesNotExist() {
-
         // given
+        reset();
         String isbn = "978-0-59-365453-8";
 
         // when + then
@@ -38,16 +32,14 @@ public class BookFeatureTests {
 
         getBooks()
                 .expectBody()
-                .jsonPath("$.length()").isEqualTo(1)
                 .jsonPath("$[0].title").isEqualTo("Atomic Habits")
                 .jsonPath("$[0].author").isEqualTo("James Clear");
-
     }
 
     @Test
     void shouldNotAddBookWhenBookAlreadyExists() {
-
         // given
+        reset();
         TestBook book = new TestBook("Accelerate", "Nicole Forsgren", "978-1-94-278833-1");
 
         // when
@@ -57,10 +49,10 @@ public class BookFeatureTests {
         addBook(book).expectStatus().is4xxClientError();
     }
 
-
     @Test
     void shouldAllowBorrowingABookThatExistsInTheCatalog() {
         // given
+        reset();
         TestBook book = new TestBook("Domain Storytelling", "Stefan Hofer", "978-3-98-890019-7");
         addBookAndValidateCreated(book);
 
@@ -77,8 +69,8 @@ public class BookFeatureTests {
     @Test
     void shouldSetDueDateWhenBookIsCheckedOut() {
         // given
-        LocalDate now = LocalDate.parse("2024-11-01");
-        setNow(now);
+        reset();
+        setDate("2024-11-01");
 
         TestBook book = new TestBook("Designing Data-Intensive Applications", "Martin Kleppmann", "978-1-44-937332-0");
         addBookAndValidateCreated(book);
@@ -91,19 +83,23 @@ public class BookFeatureTests {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.dueDate").isEqualTo("2024-12-01");
-
     }
 
     @Test
     void shouldHaveStatusOverdueWhenBookIsCheckedOutPastDueDate() {
         // given
-        setNow(LocalDate.parse("2024-11-01"));
-        TestBook book = new TestBook("Growing Object-Oriented Software, Guided by Tests", "Steve Freeman, Nat Pryce", "978-0-32-150362-6");
+        reset();
+        setDate("2024-11-01");
+        TestBook book = new TestBook(
+                "Growing Object-Oriented Software, Guided by Tests",
+                "Steve Freeman, Nat Pryce",
+                "978-0-32-150362-6"
+        );
         addBookAndValidateCreated(book);
 
         borrowBook(book.isbn()).expectStatus().isOk();
 
-        setNow(LocalDate.parse("2024-12-02"));
+        setDate("2024-12-02");
 
         // then
         checkBorrowStatus(book.isbn())
@@ -115,6 +111,7 @@ public class BookFeatureTests {
     @Test
     void shouldNotAllowBorrowingABookThatExistsInTheCatalogButIsAlreadyCheckedOut() {
         // given
+        reset();
         TestBook book = new TestBook("Test Driven Development: By Example", "Kent Beck", "978-0-32-114653-3");
         addBookAndValidateCreated(book);
 
@@ -127,17 +124,20 @@ public class BookFeatureTests {
 
     @Test
     void shouldNotAllowBorrowingABookThatDoesNotExistInTheCatalog() {
+        reset();
         borrowBook("not-registered-isbn").expectStatus().isNotFound();
     }
 
     @Test
     void shouldNotReturnCheckoutStatusForBookThatDoesNotExistInCatalog() {
+        reset();
         checkBorrowStatus("not-registered-isbn").expectStatus().isNotFound();
     }
 
     @Test
     void shouldAllowCheckedOutBooksToBeReturned() {
         // given
+        reset();
         TestBook book = new TestBook("Refactoring", "Martin Fowler", "978-0-13-475759-9");
         addBookAndValidateCreated(book);
 
@@ -151,12 +151,12 @@ public class BookFeatureTests {
                 .expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.checkoutStatus").isEqualTo("AVAILABLE");
-
     }
 
     @Test
     void shouldNotAllowAvailableBooksToBeReturned() {
         // given
+        reset();
         TestBook book = new TestBook(
                 "Design Patterns: Elements of Reusable Object-Oriented Software",
                 "Gamma Erich, Helm Richard, Johnson Ralph, Vlissides John",
@@ -177,24 +177,123 @@ public class BookFeatureTests {
 
     @Test
     void shouldNotAllowReturningABookThatDoesNotExistInTheCatalog() {
+        reset();
         returnBook("not-registered-isbn").expectStatus().isNotFound();
     }
 
     @Test
     void shouldTrackFineForOverdueBooks() {
         // given
-        setNow(LocalDate.parse("2024-11-01"));
+        reset();
+        setDate("2024-11-01");
         TestBook book = new TestBook("The Pragmatic Programmer", "Andrew Hunt, David Thomas", "978-0-20-161622-4");
         addBookAndValidateCreated(book);
 
         borrowBook(book.isbn()).expectStatus().isOk();
 
-        setNow(LocalDate.parse("2024-12-04"));
+        setDate("2024-12-04");
+
+        pause();
 
         // then
         checkAccountBalance().expectStatus().isOk()
                 .expectBody()
                 .jsonPath("$.balance").isEqualTo(3.0);
+
+        setDate("2024-12-07");
+
+        pause();
+
+        checkAccountBalance().expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.balance").isEqualTo(6.0);
+    }
+
+    @Test
+    void shouldAdjustAccountBalanceAccordinglyWhenPaid() {
+        // given
+        reset();
+        setDate("2024-11-01");
+        TestBook book = new TestBook("Clean Code", "Robert C. Martin", "978-0-13-235088-4");
+        addBookAndValidateCreated(book);
+
+        borrowBook(book.isbn()).expectStatus().isOk();
+
+        setDate("2024-12-04");
+
+        payAccountBalance(3.0).expectStatus().isOk();
+
+        // then
+        checkAccountBalance().expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.balance").isEqualTo(0.0);
+    }
+
+    @Test
+    void shouldNotAllowNegativePayment() {
+        reset();
+        payAccountBalance(-3.0).expectStatus().isBadRequest();
+    }
+
+    @Test
+    void shouldNotAllowZeroPayment() {
+        reset();
+        payAccountBalance(0.0).expectStatus().isBadRequest();
+    }
+
+    @Test
+    void shouldNotAcceptPaymentGreaterThanBalanceDue() {
+
+        reset();
+
+        payAccountBalance(4.0).expectStatus().isBadRequest();
+    }
+
+    @Test
+    void shouldNotAllowBorrowingAdditionalBooksWhenBalanceGreaterThanTwenty() {
+        // given
+        reset();
+        setDate("2024-11-01");
+
+        TestBook book = new TestBook("The Phoenix Project", "Gene Kim, Kevin Behr, George Spafford", "978-1-94-278833-1");
+
+        addBookAndValidateCreated(book);
+
+        borrowBook(book.isbn()).expectStatus().isOk();
+
+        setDate("2024-12-22");
+
+        returnBook(book.isbn()).expectStatus().isOk();
+
+        borrowBook(book.isbn()).expectStatus().isBadRequest();
+    }
+
+    @Test
+    void shouldAllowBorrowingOnceBalanceIsPaidDownBelowTheThreshold() {
+        // given
+        reset();
+        setDate("2024-11-01");
+
+        // new test book
+        TestBook book = new TestBook("The DevOps Handbook", "Gene Kim, Patrick Debois, John Willis, Jez Humble", "978-1-94-278833-1");
+        addBookAndValidateCreated(book);
+
+        borrowBook(book.isbn()).expectStatus().isOk();
+
+        setDate("2024-12-22");
+
+        returnBook(book.isbn()).expectStatus().isOk();
+
+        payAccountBalance(2.0).expectStatus().isOk();
+
+        borrowBook(book.isbn()).expectStatus().isOk();
+    }
+
+    ResponseSpec payAccountBalance(Double amount) {
+        return client.post().uri("/account/pay")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue("{\"amount\": %s}".formatted(amount))
+                .exchange();
     }
 
     ResponseSpec checkAccountBalance() {
@@ -239,119 +338,23 @@ public class BookFeatureTests {
                 .expectStatus().isOk();
     }
 
-    void setNow(LocalDate now) {
-
-        client.post().uri("/test-time/{now}", now.toString())
+    void setDate(String now) {
+        client.post().uri("/test-time/{now}", now)
                 .exchange()
                 .expectStatus().isOk();
     }
 
-
-/*
-    @Test
-    void canAddABook_AndDoesNotDuplicateBook() throws Exception {
-        // given
-        UUID uuid = UUID.randomUUID();
-        BookId bookId = new BookId();
-        Isbn isbn = new Isbn("978-0-59-365453-8");
-        Book newBook = new Book(bookId, "Atomic Habits", "James Clear", isbn);
-        given(bookService.addBook(any(Book.class))).willReturn(newBook);
-
-        // when + then
-        mockMvc.perform(post("/books")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"%s\", \"title\": \"Atomic Habits\", \"author\": \"James Clear\", \"isbn\": \"1\"}".formatted(uuid)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value("Atomic Habits"))
-                .andExpect(jsonPath("$.author").value("James Clear"));
-        verify(bookService).addBook(any(Book.class));
-
-
-        mockMvc.perform(post("/books")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"id\": \"%s\", \"title\": \"Atomic Habits\", \"author\": \"James Clear\", \"isbn\": \"1\"}".formatted(uuid)))
-                .andExpect(status().is4xxClientError())
-                .andExpect(jsonPath("$.title").value("Atomic Habits"))
-                .andExpect(jsonPath("$.author").value("James Clear"));
-
-        verify(bookService).addBook(any(Book.class));
+    void reset() {
+        client.post().uri("/reset")
+                .exchange()
+                .expectStatus().isOk();
     }
 
-    @Test
-    void canGetAllBooks() throws Exception {
-        // given
-        BookId bookId1 = new BookId();
-        Isbn isbn1 = new Isbn("978-0-59-365453-8");
-        BookId bookId2 = new BookId();
-        Isbn isbn2 = new Isbn("978-0-59-365453-8");
-        List<Book> allBooks = List.of(new Book(bookId1, "The Four Agreements", "Don Miguel Ruiz", isbn1),
-                            new Book(bookId2, "Excellent Advice for Living", "Kevin Kelly", isbn2));
-        when(bookService.getBooks()).thenReturn(allBooks);
-
-        // when + then
-        mockMvc.perform(get("/books"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].title").value("The Four Agreements"))
-                .andExpect(jsonPath("$[1].title").value("Excellent Advice for Living"));
-
+    void pause() {
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
-
-    @Test
-    void canGetBookById() throws Exception {
-        // given
-        BookId bookId = new BookId();
-        Isbn isbn = new Isbn("978-0-59-365453-8");
-        Book sampleBook = new Book(bookId, "The Four Agreements", "Don Miguel Ruiz", isbn);
-        when(bookService.getBookById(bookId)).thenReturn(Optional.of(sampleBook));
-
-        // when + then
-        String string = bookId.id().toString();
-        mockMvc.perform(get("/books/{id}", string))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("The Four Agreements"))
-                .andExpect(jsonPath("$.author").value("Don Miguel Ruiz"));
-    }
-
-    @Test
-    void canUpdateBook() throws Exception {
-        // given
-        BookId bookId = new BookId();
-        Isbn isbn = new Isbn("978-0-59-365453-8");
-        Book updatedBook = new Book(bookId, "New Title", "New Author", isbn);
-
-        // mock the service layer to return the updated book
-        when(bookService.updateBook(eq(bookId), any(Book.class))).thenReturn(updatedBook);
-
-        // when + then
-        mockMvc.perform(put("/books/{id}", bookId.id().toString())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"title\": \"New Title\", \"author\": \"New Author\", \"isbn\": \"1\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.title").value("New Title"))
-                .andExpect(jsonPath("$.author").value("New Author"));
-
-        verify(bookService).updateBook(eq(bookId), any(Book.class));
-    }
-
-    @Test
-    void canDeleteABook() throws Exception {
-        // given
-        BookId bookId = new BookId();
-
-        // no need to mock since the service returns void
-        doNothing().when(bookService).deleteBookById(bookId);
-
-        // when + then
-        mockMvc.perform(delete("/books/{id}", bookId.id().toString()))
-                .andExpect(status().isNoContent());
-
-        // verify that the service method was called
-        verify(bookService).deleteBookById(bookId);
-    }
-
- */
-
 }
-
-

@@ -24,6 +24,7 @@ dependencies {
     implementation("org.springframework.modulith:spring-modulith-starter-jpa:1.2.5")
     runtimeOnly("com.h2database:h2")
     compileOnly("org.projectlombok:lombok")
+    testCompileOnly("org.projectlombok:lombok")
     annotationProcessor("org.projectlombok:lombok")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework.kafka:spring-kafka-test")

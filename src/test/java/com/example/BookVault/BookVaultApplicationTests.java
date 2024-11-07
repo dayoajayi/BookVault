@@ -3,6 +3,7 @@ package com.example.BookVault;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.modulith.core.ApplicationModules;
+import org.springframework.modulith.docs.Documenter;
 
 
 class BookVaultApplicationTests {
@@ -11,11 +12,17 @@ class BookVaultApplicationTests {
     }
 
 
-
     @Test
     void contextLoads() {
 
-        ApplicationModules.of(BookVaultApplication.class).verify();
+        ApplicationModules applicationModules = ApplicationModules.of(BookVaultApplication.class);
+
+        applicationModules.verify();
+
+        new Documenter(applicationModules)
+                .writeModulesAsPlantUml()
+                .writeIndividualModulesAsPlantUml();
+
     }
 
 }

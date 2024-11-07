@@ -2,7 +2,6 @@ package com.example.BookVault.catalog.domain;
 
 import com.example.BookVault.catalog.BookAlreadyExistsException;
 import com.example.BookVault.catalog.BookNotFoundException;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -19,11 +18,14 @@ public class BookService {
         this.bookRepository = bookRepository;
     }
 
-    @SneakyThrows
+    public void reset() {
+        bookRepository.findAll().stream().map(Book::getId).forEach(bookRepository::deleteById);
+    }
+
     public Book addBook(Book book) {
 
         if (bookRepository.existsByIsbn(book.getIsbn())) {
-            throw new BookAlreadyExistsException("Book with id " + book.getId() + " already exists");
+            throw new BookAlreadyExistsException("Book with id %s already exists".formatted(book.getId()));
         }
         return bookRepository.save(book);
     }

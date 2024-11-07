@@ -34,7 +34,7 @@ public class DatabaseBookRepository implements BookRepository {
     @Override
     public Optional<Book> findById(BookId bookId) {
 
-        return bookJPARepository.findById(bookId)
+        return bookJPARepository.findById(bookId.id())
                 .map(this::toBook);
     }
 
@@ -46,7 +46,7 @@ public class DatabaseBookRepository implements BookRepository {
 
     @Override
     public boolean existsById(BookId bookId) {
-        return bookJPARepository.existsById(bookId);
+        return bookJPARepository.existsById(bookId.id());
     }
 
     @Override
@@ -56,7 +56,7 @@ public class DatabaseBookRepository implements BookRepository {
 
     @Override
     public void deleteById(BookId bookId) {
-        bookJPARepository.deleteById(bookId);
+        bookJPARepository.deleteById(bookId.id());
     }
 
     private BookJPAEntity toEntity(Book book) {
