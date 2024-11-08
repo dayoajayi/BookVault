@@ -1,8 +1,11 @@
 package com.example.BookVault.borrowingevents;
 
+import org.jmolecules.event.annotation.DomainEvent;
+
 import java.time.LocalDate;
 
-public record BookCheckedOutEvent(
+@DomainEvent
+public record BookCheckedOut(
         String isbn,
         LocalDate dueDate
 ) {

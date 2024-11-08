@@ -1,2 +1,4 @@
-@org.springframework.modulith.ApplicationModule()
+@ApplicationModule(displayName = "Accounting Events")
 package com.example.BookVault.accountingevents;
+
+import org.springframework.modulith.ApplicationModule;

@@ -1,0 +1,15 @@
+- Thought this was a Modulith lightning talk
+  - Its not
+  - Its more a demo of what we've been up to
+  - What is that: Sort of best practices 
+- Dayo sets the stage
+- Dayo shows off our Github Project
+- Going deep on DDD
+- No lombok needed anymore, maybe? 
+- Moduliths
+- Whats next: this is a kata!
+  - We're going to fully start over, maybe in Kotlin?
+  - Maybe pull some OpenAPI Generator stuff in?
+  - explore ArchUnit & jMolecules which integrates closely with Moduliths
+  - Deeper dive into persistence? We sort of skipped persistence to focus on modulith
+- Q&A

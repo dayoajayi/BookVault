@@ -2,7 +2,7 @@ package com.example.BookVault.borrowing.domain;
 
 import com.example.BookVault.accountingevents.AccountCurrentEvent;
 import com.example.BookVault.accountingevents.AccountDelinquentEvent;
-import com.example.BookVault.borrowingevents.BookCheckedOutEvent;
+import com.example.BookVault.borrowingevents.BookCheckedOut;
 import com.example.BookVault.borrowingevents.BookReturnedEvent;
 import com.example.BookVault.time.DateUpdatedEvent;
 import com.example.BookVault.catalog.BookApi;
@@ -67,7 +67,7 @@ public class CheckoutLedgerService {
         LocalDate dueDate = now.plusDays(30);
 
         checkoutLedger.put(isbn, dueDate);
-        events.publishEvent(new BookCheckedOutEvent(isbn, dueDate));
+        events.publishEvent(new BookCheckedOut(isbn, dueDate));
     }
 
     public CheckoutLedgerEntry getCheckoutLedgerEntry(String isbn) {

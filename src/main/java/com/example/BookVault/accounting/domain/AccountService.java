@@ -2,7 +2,7 @@ package com.example.BookVault.accounting.domain;
 
 import com.example.BookVault.accountingevents.AccountCurrentEvent;
 import com.example.BookVault.accountingevents.AccountDelinquentEvent;
-import com.example.BookVault.borrowingevents.BookCheckedOutEvent;
+import com.example.BookVault.borrowingevents.BookCheckedOut;
 import com.example.BookVault.borrowingevents.BookReturnedEvent;
 import com.example.BookVault.time.DateUpdatedEvent;
 import jakarta.transaction.Transactional;
@@ -52,7 +52,7 @@ public class AccountService {
 
 
     @ApplicationModuleListener
-    public void onBookCheckedOut(BookCheckedOutEvent bookCheckedOutEvent) {
+    public void onBookCheckedOut(BookCheckedOut bookCheckedOutEvent) {
         checkoutLedger.put(bookCheckedOutEvent.isbn(), bookCheckedOutEvent.dueDate());
     }
 
