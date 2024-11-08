@@ -1,4 +1,4 @@
-package com.example.BookVault.events;
+package com.example.BookVault.accountingevents;
 
 public record AccountCurrentEvent(String aMessage) {
 }

@@ -1,9 +1,9 @@
 package com.example.BookVault.accounting.domain;
 
-import com.example.BookVault.events.AccountCurrentEvent;
-import com.example.BookVault.events.AccountDelinquentEvent;
-import com.example.BookVault.events.BookCheckedOutEvent;
-import com.example.BookVault.events.BookReturnedEvent;
+import com.example.BookVault.accountingevents.AccountCurrentEvent;
+import com.example.BookVault.accountingevents.AccountDelinquentEvent;
+import com.example.BookVault.borrowingevents.BookCheckedOutEvent;
+import com.example.BookVault.borrowingevents.BookReturnedEvent;
 import com.example.BookVault.time.DateUpdatedEvent;
 import jakarta.transaction.Transactional;
 import org.springframework.context.ApplicationEventPublisher;

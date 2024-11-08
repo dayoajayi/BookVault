@@ -1,4 +1,4 @@
-package com.example.BookVault.events;
+package com.example.BookVault.borrowingevents;
 
 import java.time.LocalDate;
 
