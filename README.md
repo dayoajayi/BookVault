@@ -14,7 +14,7 @@ BookVault is a robust book management application designed to keep track of book
 
 ### **Prerequisites**
 - **Java Development Kit (JDK) 21**: Ensure you have Temurin 21 installed.
-- **Maven**: For managing dependencies and building the project.
+- **Gradle** (or the Gradle Wrapper provided) for building the project.
 - **Spring Boot**: The framework used for building the application.
 - **Lombok**: For reducing boilerplate code in Java.
 
@@ -65,6 +65,37 @@ To retrieve a list of all books, send a GET request to `/books`. To retrieve a s
 | PUT    | `/books/{id}`    | Update a book                    |
 | DELETE | `/books/{id}`    | Delete a book                    |
 
+## **API Documentation (Swagger UI)**
+
+If you’ve added **Springdoc OpenAPI** (or a similar library) for automatic API documentation, you can access the **Swagger UI** once the application is running:
+
+1. **Run the application locally**:
+   ```bash
+   ./gradlew bootRun
+   ```
+   or use Docker (after building an image):
+   ```bash
+   docker run -p 8080:8080 your-image-name:latest
+   ```
+
+2. **Open your browser** and navigate to:
+   ```
+   http://localhost:8080/swagger-ui.html
+   ```
+   Depending on your setup, you may also find it at:
+   ```
+   http://localhost:8080/swagger-ui/index.html
+   ```
+   You’ll see a user-friendly interface for exploring and testing all available endpoints.
+
+3. **Explore and Test Endpoints** from the Swagger UI by expanding each endpoint, filling in parameters, and clicking **Try it out**.
+
+> **Note**: If you don’t see Swagger UI, ensure you’ve added the relevant dependency in your build file, for example:
+> ```kotlin
+> implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0")
+> ```
+> Then rebuild and rerun the application.
+
 ## **Contributing**
 Contributions are welcome! Please submit a pull request or open an issue to suggest improvements or report bugs.
 
@@ -75,7 +106,5 @@ This project is licensed under the **[MIT License](LICENSE)**. See the `LICENSE`
 - **Author**: Dayo Ajayi
 - **Email**: dayo.ajayi@gmail.com
 - **GitHub**: [dayoajayi](https://github.com/dayoajayi)
+```
 
----
-
-This template covers essential sections and provides a structured overview of your application. You can modify it to add any additional details specific to your project.
