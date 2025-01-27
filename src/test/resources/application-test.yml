@@ -1,0 +1,5 @@
+spring:
+  modulith:
+    moments:
+      enable-time-machine: true
+      granularity: days

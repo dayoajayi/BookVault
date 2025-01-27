@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.List;
@@ -17,11 +18,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class BookServiceTests {
     private BookRepository bookRepository;
     private BookService bookService;
+    private ApplicationEventPublisher eventPublisher;
 
     @BeforeEach
     void setUp() {
         bookRepository = new FakeBookRepository();
-        bookService = new BookService(bookRepository);
+        bookService = new BookService(eventPublisher, bookRepository);
     }
 
     @Test

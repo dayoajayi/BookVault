@@ -1,38 +1,43 @@
 package com.example.BookVault.borrowing.domain;
 
-import com.example.BookVault.accountingevents.AccountCurrentEvent;
+import com.example.BookVault.accountingevents.AccountCurrent;
 import com.example.BookVault.accountingevents.AccountDelinquentEvent;
 import com.example.BookVault.borrowingevents.BookCheckedOut;
 import com.example.BookVault.borrowingevents.BookReturnedEvent;
-import com.example.BookVault.time.DateUpdatedEvent;
-import com.example.BookVault.catalog.BookApi;
 import com.example.BookVault.catalog.BookNotFoundException;
+import com.example.BookVault.catalog.BookCreated;
+import com.example.BookVault.time.DateUpdatedEvent;
 import jakarta.transaction.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
+import org.springframework.modulith.moments.DayHasPassed;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 public class CheckoutLedgerService {
 
     private final ApplicationEventPublisher events;
-    private final BookApi bookApi;
+
+    private final Set<String> books = new HashSet<>();
 
     private final Map<String, LocalDate> checkoutLedger = new HashMap<>();
-    private LocalDate now = LocalDate.now();
+    private LocalDate now;
     private boolean accountDelinquent = false;
 
     CheckoutLedgerService(
-            BookApi bookApi,
-            ApplicationEventPublisher events
+            ApplicationEventPublisher events,
+            Clock clock
     ) {
-        this.bookApi = bookApi;
         this.events = events;
+        this.now = LocalDate.now(clock);
     }
 
     public void reset() {
@@ -51,9 +56,8 @@ public class CheckoutLedgerService {
 
     @Transactional
     public void checkoutBook(String isbn) {
-        if (bookApi.getBookByIsbn(isbn).isEmpty()) {
-            throw new BookNotFoundException(isbn);
-        }
+
+        validateBookExists(isbn);
 
         if (checkoutLedger.containsKey(isbn)) {
 
@@ -72,9 +76,7 @@ public class CheckoutLedgerService {
 
     public CheckoutLedgerEntry getCheckoutLedgerEntry(String isbn) {
 
-        if (bookApi.getBookByIsbn(isbn).isEmpty()) {
-            throw new BookNotFoundException(isbn);
-        }
+        validateBookExists(isbn);
 
         LocalDate dueDate = checkoutLedger.get(isbn);
 
@@ -92,9 +94,8 @@ public class CheckoutLedgerService {
 
     @Transactional
     public void returnBook(String isbn) {
-        if (bookApi.getBookByIsbn(isbn).isEmpty()) {
-            throw new BookNotFoundException(isbn);
-        }
+
+        validateBookExists(isbn);
 
         LocalDate entry = checkoutLedger.get(isbn);
         if (entry == null) {
@@ -103,6 +104,12 @@ public class CheckoutLedgerService {
 
         checkoutLedger.remove(isbn);
         events.publishEvent(new BookReturnedEvent(isbn));
+    }
+
+    private void validateBookExists(String isbn) {
+        if (!books.contains(isbn)) {
+            throw new BookNotFoundException(isbn);
+        }
     }
 
     @ApplicationModuleListener
@@ -116,7 +123,17 @@ public class CheckoutLedgerService {
     }
 
     @ApplicationModuleListener
-    void on(AccountCurrentEvent event) {
+    void on(AccountCurrent event) {
         accountDelinquent = false;
+    }
+
+    @ApplicationModuleListener
+    void on(BookCreated event) {
+        books.add(event.isbn());
+    }
+
+    @ApplicationModuleListener
+    void on(DayHasPassed event) {
+        now = event.getDate();
     }
 }

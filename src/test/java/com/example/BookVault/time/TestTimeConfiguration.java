@@ -11,4 +11,10 @@ public class TestTimeConfiguration {
     public TestTimeProvider testTimeProvider(ApplicationEventPublisher events) {
         return new TestTimeProvider(events);
     }
+
+    @Bean
+    public SettableClock settableClock() {
+        return new SettableClock(SettableClock.systemUTC());
+    }
 }
+

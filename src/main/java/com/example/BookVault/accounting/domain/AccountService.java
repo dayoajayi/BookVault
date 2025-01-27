@@ -1,6 +1,6 @@
 package com.example.BookVault.accounting.domain;
 
-import com.example.BookVault.accountingevents.AccountCurrentEvent;
+import com.example.BookVault.accountingevents.AccountCurrent;
 import com.example.BookVault.accountingevents.AccountDelinquentEvent;
 import com.example.BookVault.borrowingevents.BookCheckedOut;
 import com.example.BookVault.borrowingevents.BookReturnedEvent;
@@ -8,6 +8,7 @@ import com.example.BookVault.time.DateUpdatedEvent;
 import jakarta.transaction.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.modulith.events.ApplicationModuleListener;
+import org.springframework.modulith.moments.DayHasPassed;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -62,6 +63,35 @@ public class AccountService {
     }
 
     @ApplicationModuleListener
+    void on(DayHasPassed event) {
+        now = event.getDate();
+        boolean accountCurrent = balance < 20.0;
+        long overdueBooks = checkoutLedger
+                .values()
+                .stream()
+                .map(dueDate -> {
+                    System.out.printf("Due Date: %s%n", dueDate.toString());
+                    return dueDate;
+                })
+                .filter(dueDate -> dueDate.isBefore(now))
+                .count();
+
+        System.out.printf("Today's date: %s%n", now);
+        System.out.printf("Checked out books: %d%n", checkoutLedger.size());
+        System.out.printf("Overdue books: %d%n", overdueBooks);
+
+        balance += overdueBooks;
+
+        System.out.printf("New balance: %s%n", balance);
+
+        if (balance >= 20.0 && accountCurrent) {
+            System.out.println("Account is delinquent");
+            signalAccountDelinquent();
+        }
+    }
+
+
+    @ApplicationModuleListener
     public void onDateUpdated(DateUpdatedEvent dateUpdatedEvent) {
 
         LocalDate previousDate = now;
@@ -92,6 +122,6 @@ public class AccountService {
 
     @Transactional
     public void signalAccountCurrent() {
-        events.publishEvent(new AccountCurrentEvent("Account is current"));
+        events.publishEvent(new AccountCurrent("Account is current"));
     }
 }

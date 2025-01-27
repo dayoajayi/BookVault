@@ -1,6 +1,7 @@
 package com.example.BookVault;
 
 import com.example.BookVault.time.TestTimeConfiguration;
+import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -213,13 +214,14 @@ public class BookFeatureTests {
     void shouldAdjustAccountBalanceAccordinglyWhenPaid() {
         // given
         reset();
-        setDate("2024-11-01");
+//        setDate("2024-11-01");
         TestBook book = new TestBook("Clean Code", "Robert C. Martin", "978-0-13-235088-4");
         addBookAndValidateCreated(book);
 
         borrowBook(book.isbn()).expectStatus().isOk();
 
-        setDate("2024-12-04");
+//        setDate("2024-12-04");
+        shiftDays(34);
 
         payAccountBalance(3.0).expectStatus().isOk();
 
@@ -249,11 +251,10 @@ public class BookFeatureTests {
         payAccountBalance(4.0).expectStatus().isBadRequest();
     }
 
+    @SneakyThrows
     @Test
     void shouldNotAllowBorrowingAdditionalBooksWhenBalanceGreaterThanTwenty() {
-        // given
         reset();
-        setDate("2024-11-01");
 
         TestBook book = new TestBook("The Phoenix Project", "Gene Kim, Kevin Behr, George Spafford", "978-1-94-278833-1");
 
@@ -261,7 +262,9 @@ public class BookFeatureTests {
 
         borrowBook(book.isbn()).expectStatus().isOk();
 
-        setDate("2024-12-22");
+        shiftDays(51);
+
+        pause();
 
         returnBook(book.isbn()).expectStatus().isOk();
 
@@ -270,23 +273,30 @@ public class BookFeatureTests {
 
     @Test
     void shouldAllowBorrowingOnceBalanceIsPaidDownBelowTheThreshold() {
-        // given
         reset();
-        setDate("2024-11-01");
 
-        // new test book
         TestBook book = new TestBook("The DevOps Handbook", "Gene Kim, Patrick Debois, John Willis, Jez Humble", "978-1-94-278833-1");
         addBookAndValidateCreated(book);
 
         borrowBook(book.isbn()).expectStatus().isOk();
 
-        setDate("2024-12-22");
+        shiftDays(51);
+
+        pause();
 
         returnBook(book.isbn()).expectStatus().isOk();
 
         payAccountBalance(2.0).expectStatus().isOk();
 
         borrowBook(book.isbn()).expectStatus().isOk();
+    }
+
+    @Test
+    void testingShifts() {
+        reset();
+        setDate("2024-11-01");
+
+        shiftDays(3);
     }
 
     ResponseSpec payAccountBalance(Double amount) {
@@ -340,6 +350,12 @@ public class BookFeatureTests {
 
     void setDate(String now) {
         client.post().uri("/test-time/{now}", now)
+                .exchange()
+                .expectStatus().isOk();
+    }
+
+    void shiftDays(Integer days) {
+        client.post().uri("/shift-time/{days}", days)
                 .exchange()
                 .expectStatus().isOk();
     }

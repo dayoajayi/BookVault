@@ -21,6 +21,7 @@ class BookVaultApplicationTests {
 
         new Documenter(applicationModules)
                 .writeModulesAsPlantUml()
+                .writeModuleCanvases()
                 .writeIndividualModulesAsPlantUml();
 
     }
